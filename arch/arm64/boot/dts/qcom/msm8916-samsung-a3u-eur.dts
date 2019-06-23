@@ -8,3 +8,9 @@
 	model = "Samsung Galaxy A3U (EUR)";
 	compatible = "samsung,a3u-eur", "qcom,msm8916";
 };
+
+&accel {
+	mount-matrix = "0", "1", "0",
+		       "1", "0", "0",
+		       "0", "0", "1";
+};
