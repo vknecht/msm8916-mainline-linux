@@ -147,6 +147,30 @@
 	};
 };
 
+&blsp_i2c2 {
+	status = "okay";
+
+	accelerometer@10 {
+		compatible = "bosch,bmc150_accel";
+		reg = <0x10>;
+		mount-matrix = "0", "1", "0",
+			      "-1", "0", "0",
+			       "0", "0", "1";
+	};
+
+	magnetometer@12 {
+		compatible = "bosch,bmc150_magn";
+		reg = <0x12>;
+	};
+
+	gyroscope@68 {
+		compatible = "bosch,bmg160";
+		reg = <0x68>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <23 IRQ_TYPE_EDGE_RISING>;
+	};
+};
+
 &blsp_i2c5 {
 	status = "okay";
 
