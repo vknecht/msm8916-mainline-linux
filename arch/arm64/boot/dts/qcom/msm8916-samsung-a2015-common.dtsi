@@ -274,6 +274,34 @@
 	};
 };
 
+&blsp_i2c4 {
+	status = "okay";
+
+	battery@35 {
+		compatible = "richtek,rt5033-battery";
+		reg = <0x35>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <121 IRQ_TYPE_EDGE_BOTH>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&fg_alert_default>;
+	};
+};
+
+&blsp_i2c6 {
+	status = "okay";
+
+	pmic@34 {
+		compatible = "richtek,rt5033";
+		reg = <0x34>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <62 IRQ_TYPE_EDGE_FALLING>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&pmic_int_default>;
+	};
+};
+
 &msmgpio {
 	accel_int_default: accel_int_default {
 		pinmux {
@@ -282,6 +310,18 @@
 		};
 		pinconf {
 			pins = "gpio115";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	fg_alert_default: fg_alert_default {
+		pinmux {
+			function = "gpio";
+			pins = "gpio121";
+		};
+		pinconf {
+			pins = "gpio121";
 			drive-strength = <2>;
 			bias-disable;
 		};
@@ -368,6 +408,18 @@
 			pins = "gpio49";
 			drive-strength = <2>;
 			bias-pull-down;
+		};
+	};
+
+	pmic_int_default: pmic_int_default {
+		pinmux {
+			function = "gpio";
+			pins = "gpio62";
+		};
+		pinconf {
+			pins = "gpio62";
+			drive-strength = <2>;
+			bias-disable;
 		};
 	};
 
