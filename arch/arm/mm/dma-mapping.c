@@ -15,6 +15,7 @@
 #include <linux/init.h>
 #include <linux/device.h>
 #include <linux/dma-direct.h>
+#include <linux/dma-iommu.h>
 #include <linux/dma-map-ops.h>
 #include <linux/highmem.h>
 #include <linux/memblock.h>
@@ -1772,6 +1773,9 @@ void arch_setup_dma_ops(struct device *dev, u64 dma_base, u64 size,
 	dev->archdata.dma_coherent = coherent;
 	dev->dma_coherent = coherent;
 
+	if (iommu)
+		iommu_setup_dma_ops(dev, dma_base, dma_base + size - 1);
+
 	/*
 	 * Don't override the dma_ops if they have already been set. Ideally
 	 * this should be the only location where dma_ops are set, remove this
@@ -1796,6 +1800,13 @@ void arch_teardown_dma_ops(struct device *dev)
 	/* Let arch_setup_dma_ops() start again from scratch upon re-probe */
 	set_dma_ops(dev, NULL);
 }
+
+#ifdef CONFIG_IOMMU_DMA
+void arch_dma_prep_coherent(struct page *page, size_t size)
+{
+	__dma_clear_buffer(page, size, NORMAL);
+}
+#endif
 
 void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
 		enum dma_data_direction dir)
