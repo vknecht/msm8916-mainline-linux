@@ -153,6 +153,8 @@ static int a4xx_hw_init(struct msm_gpu *gpu)
 		gpu_write(gpu, REG_A4XX_VBIF_IN_WR_LIM_CONF0, 0x18181818);
 		gpu_write(gpu, REG_A4XX_VBIF_IN_WR_LIM_CONF1, 0x00000018);
 		gpu_write(gpu, REG_A4XX_VBIF_ROUND_ROBIN_QOS_ARB, 0x00000003);
+	} else if (adreno_is_a405(adreno_gpu)) {
+		gpu_write(gpu, REG_A4XX_VBIF_ROUND_ROBIN_QOS_ARB, 0x00000003);
 	} else {
 		BUG();
 	}
@@ -571,7 +573,7 @@ struct msm_gpu *a4xx_gpu_init(struct drm_device *dev)
 		goto fail;
 
 	/* if needed, allocate gmem: */
-	if (adreno_is_a4xx(adreno_gpu)) {
+	if (adreno_is_a4xx(adreno_gpu) && !adreno_is_a405(adreno_gpu)) {
 		ret = adreno_gpu_ocmem_init(dev->dev, adreno_gpu,
 					    &a4xx_gpu->ocmem);
 		if (ret)
