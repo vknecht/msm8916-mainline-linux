@@ -157,7 +157,7 @@
 			reg = <0x100>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			//clocks = <&apcs>; //fixme
+			clocks = <&apcs>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD0>;
@@ -170,7 +170,7 @@
 			reg = <0x101>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			//clocks = <&apcs>; //fixme
+			clocks = <&apcs>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD1>;
@@ -183,7 +183,7 @@
 			reg = <0x102>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			//clocks = <&apcs>; //fixme
+			clocks = <&apcs>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD2>;
@@ -196,7 +196,7 @@
 			reg = <0x103>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			//clocks = <&apcs>; //fixme
+			clocks = <&apcs>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD3>;
@@ -1908,18 +1908,31 @@
 			reg = <0x0b000000 0x1000>, <0x0b002000 0x1000>;
 		};
 
-		apcs: mailbox@b011000 {
-			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
-			reg = <0x0b011000 0x1000>;
-			#mbox-cells = <1>;
-			clocks = <&a53pll>, <&gcc GPLL0_VOTE>;
-			clock-names = "pll", "aux";
+		a53pll_c1: clock@b016000 {
+			compatible = "qcom,msm8939-a53pll-c1";
+			reg = <0xb016000 0x40>;
 			#clock-cells = <0>;
 		};
 
-		a53pll: clock@b016000 {
-			compatible = "qcom,msm8916-a53pll";
-			reg = <0x0b016000 0x40>;
+		a53pll_c0: clock@b116000 {
+			compatible = "qcom,msm8939-a53pll-c0";
+			reg = <0xb116000 0x40>;
+			#clock-cells = <0>;
+			status = "disabled";
+		};
+
+		a53pll_cci: clock@b1d0000 {
+			compatible = "qcom,msm8939-a53pll-cci";
+			reg = <0xb1d0000 0x40>;
+			#clock-cells = <0>;
+			status = "disabled";
+		};
+
+		apcs: mailbox@b111000 {
+			compatible = "qcom,msm8939-apcs-kpss-global", "syscon";
+			reg = <0xb111000 0x1000>;
+			#mbox-cells = <1>;
+			clocks = <&a53pll_c1>, <&a53pll_c0>, <&a53pll_cci>;
 			#clock-cells = <0>;
 		};
 
