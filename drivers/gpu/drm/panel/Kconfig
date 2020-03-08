@@ -346,6 +346,11 @@ config DRM_PANEL_SAMSUNG_S6E8AA0
 	select DRM_MIPI_DSI
 	select VIDEOMODE_HELPERS
 
+config DRM_PANEL_SAMSUNG_TC358764_LTL101AL06
+	tristate "Samsung TC358764 LTL101AL06 DSI/LDVS video mode panel"
+	depends on GPIOLIB && OF && REGULATOR
+	depends on DRM_MIPI_DSI
+
 config DRM_PANEL_SEIKO_43WVF1G
 	tristate "Seiko 43WVF1G panel"
 	depends on OF
