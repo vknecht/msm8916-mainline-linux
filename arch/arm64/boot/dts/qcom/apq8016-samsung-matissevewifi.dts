@@ -87,6 +87,20 @@
 			};
 		};
 
+		mdss@1a00000 {
+			dsi@1a98000 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				vdda-supply = <&pm8916_l2>;
+				vddio-supply = <&pm8916_l6>;
+			};
+
+			dsi-phy@1a98300 {
+				vddio-supply = <&pm8916_l6>;
+			};
+		};
+
 		/*
 		 * Attempting to enable these devices causes a "synchronous
 		 * external abort". Suspected cause is that the debug power
@@ -131,6 +145,40 @@
 			linux,code = <KEY_HOMEPAGE>;
 		};
 	};
+
+	reg_lcd: regulator-lcd {
+		compatible = "regulator-fixed";
+		regulator-name = "lcd";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+
+		/* FIXME: find why we have to force regulator on */
+		regulator-always-on;
+		regulator-boot-on;
+
+		gpio = <&msmgpio 8 0>;
+		enable-active-high;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&lcd_en_default>;
+	};
+
+	reg_lvds: regulator-lvds {
+		compatible = "regulator-fixed";
+		regulator-name = "lvds";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+
+		/* FIXME: see above */
+		regulator-always-on;
+		regulator-boot-on;
+
+		gpio = <&msmgpio 17 0>;
+		enable-active-high;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&lvds_en_default>;
+	};
 };
 
 &blsp_i2c1 {
@@ -166,6 +214,45 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&accel_int_default>;
+	};
+};
+
+&dsi0 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&mdss_default>;
+	pinctrl-1 = <&mdss_sleep>;
+
+	panel@0 {
+		compatible = "samsung,tc358764-ltl101al06";
+		reg = <0>;
+
+		lcd-supply = <&reg_lcd>;
+		lvds-supply = <&reg_lvds>;
+		reset-gpios = <&msmgpio 31 GPIO_ACTIVE_HIGH>;
+
+		clocks = <&gcc GCC_GP3_CLK>;
+		clock-names = "pwm";
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				panel_in: endpoint {
+					remote-endpoint = <&dsi0_out>;
+				};
+			};
+		};
+	};
+
+	ports {
+		port@1 {
+			endpoint {
+				remote-endpoint = <&panel_in>;
+				data-lanes = <0 1 2 3>;
+			};
+		};
 	};
 };
 
@@ -320,6 +407,30 @@
 		};
 	};
 
+	lcd_en_default: lcd_en_default {
+		pinmux {
+			function = "gpio";
+			pins = "gpio8";
+		};
+		pinconf {
+			pins = "gpio8";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	lvds_en_default: lvds_en_default {
+		pinmux {
+			function = "gpio";
+			pins = "gpio17";
+		};
+		pinconf {
+			pins = "gpio17";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
 	muic_int_default: muic_int_default {
 		pinmux {
 			function = "gpio";
@@ -329,6 +440,32 @@
 			pins = "gpio12";
 			drive-strength = <2>;
 			bias-disable;
+		};
+	};
+
+	pmx_mdss {
+		mdss_default: mdss_default {
+			pinmux {
+				function = "gpio";
+				pins = "gpio31";
+			};
+			pinconf {
+				pins = "gpio31";
+				drive-strength = <8>;
+				bias-disable;
+			};
+		};
+
+		mdss_sleep: mdss_sleep {
+			pinmux {
+				function = "gpio";
+				pins = "gpio31";
+			};
+			pinconf {
+				pins = "gpio31";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
 		};
 	};
 };
