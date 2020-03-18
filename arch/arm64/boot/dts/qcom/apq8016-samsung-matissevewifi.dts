@@ -6,6 +6,7 @@
 #include "pm8916.dtsi"
 #include "arm/qcom-msm8916-no-psci.dtsi"
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 
 / {
@@ -109,6 +110,27 @@
 		etm@85e000 { status = "disabled"; };
 		etm@85f000 { status = "disabled"; };
 	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio_keys_default>;
+
+		label = "GPIO Buttons";
+
+		volume-up {
+			label = "Volume Up";
+			gpios = <&msmgpio 107 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEUP>;
+		};
+
+		home {
+			label = "Home";
+			gpios = <&msmgpio 109 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_HOMEPAGE>;
+		};
+	};
 };
 
 &blsp_i2c1 {
@@ -123,6 +145,19 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&muic_int_default>;
+	};
+};
+
+&spmi_bus {
+	pm8916@0 {
+		pon@800 {
+			volume-down {
+				compatible = "qcom,pm8941-resin";
+				interrupts = <0x0 0x8 1 IRQ_TYPE_EDGE_BOTH>;
+				bias-pull-up;
+				linux,code = <KEY_VOLUMEDOWN>;
+			};
+		};
 	};
 };
 
@@ -240,6 +275,18 @@
 };
 
 &msmgpio {
+	gpio_keys_default: gpio_keys_default {
+		pinmux {
+			function = "gpio";
+			pins = "gpio107", "gpio109";
+		};
+		pinconf {
+			pins = "gpio107", "gpio109";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
 	muic_int_default: muic_int_default {
 		pinmux {
 			function = "gpio";
