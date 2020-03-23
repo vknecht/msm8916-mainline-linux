@@ -115,9 +115,9 @@
 #define MSM8939_VDDMDCX_VFC	2
 #define MSM8939_VDDCX		3
 #define MSM8939_VDDCX_AO	4
-#define MSM8939_VDDCX_VFC	6
-#define MSM8939_VDDMX		7
-#define MSM8939_VDDMX_AO	8
+#define MSM8939_VDDCX_VFC	5
+#define MSM8939_VDDMX		6
+#define MSM8939_VDDMX_AO	7
 
 /* RPM SMD Power Domain performance levels */
 #define RPM_SMD_LEVEL_RETENTION       16
