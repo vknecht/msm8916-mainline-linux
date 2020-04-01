@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <dt-bindings/sound/qcom,q6afe.h>
 #include <dt-bindings/sound/qcom,q6asm.h>
+#include <dt-bindings/sound/qcom,q6voice.h>
 
 / {
 	reserved-memory {
@@ -59,6 +60,13 @@
 				link-name = "MultiMedia3";
 				cpu {
 					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA3>;
+				};
+			};
+
+			cs-voice-dai-link {
+				link-name = "CS-Voice";
+				cpu {
+					sound-dai = <&q6voicedai CS_VOICE>;
 				};
 			};
 
