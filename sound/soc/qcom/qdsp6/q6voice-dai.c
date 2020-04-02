@@ -54,15 +54,63 @@ static struct snd_soc_dai_driver q6voice_dais[] = {
 	},
 };
 
+#define AFE_PORT_ID_PRIMARY_MI2S_RX         0x1000
+#define AFE_PORT_ID_PRIMARY_MI2S_TX         0x1001
+#define AFE_PORT_ID_SECONDARY_MI2S_RX       0x1002
+#define AFE_PORT_ID_SECONDARY_MI2S_TX       0x1003
+#define AFE_PORT_ID_TERTIARY_MI2S_RX        0x1004
+#define AFE_PORT_ID_TERTIARY_MI2S_TX        0x1005
+#define AFE_PORT_ID_QUATERNARY_MI2S_RX      0x1006
+#define AFE_PORT_ID_QUATERNARY_MI2S_TX      0x1007
+
 static void voc_start(struct device *dev)
 {
 	struct q6mvm *mvm;
+	struct q6cvs *cvs;
+	struct q6cvp *cvp;
+	int ret;
 
 	dev_err(dev, "Hello from voc_start()\n");
 
 	mvm = q6mvm_create_session();
 	if (IS_ERR(mvm)) {
 		dev_err(dev, "Failed to create mvm session: %ld\n", PTR_ERR(mvm));
+		return;
+	}
+
+	cvs = q6cvs_create_session();
+	if (IS_ERR(cvs)) {
+		dev_err(dev, "Failed to create cvs session: %ld\n", PTR_ERR(cvs));
+		return;
+	}
+
+	ret = q6mvm_set_dual_control(mvm);
+	if (ret) {
+		dev_err(dev, "Failed to set dual control: %d\n", ret);
+		return;
+	}
+
+	cvp = q6cvp_create_session(AFE_PORT_ID_TERTIARY_MI2S_TX, AFE_PORT_ID_PRIMARY_MI2S_RX);
+	if (IS_ERR(cvp)) {
+		dev_err(dev, "Failed to create cvp session: %ld\n", PTR_ERR(cvp));
+		return;
+	}
+
+	ret = q6cvp_enable(cvp);
+	if (ret) {
+		dev_err(dev, "Failed to enable cvp: %d\n", ret);
+		return;
+	}
+
+	ret = q6mvm_attach(mvm, cvp);
+	if (ret) {
+		dev_err(dev, "Failed to attach cvp to mvm: %d\n", ret);
+		return;
+	}
+
+	ret = q6mvm_start(mvm);
+	if (ret) {
+		dev_err(dev, "Failed to start voice: %d\n", ret);
 		return;
 	}
 }

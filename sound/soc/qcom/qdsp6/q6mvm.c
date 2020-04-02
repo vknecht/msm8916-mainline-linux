@@ -2,6 +2,7 @@
 #include <linux/of.h>
 #include <linux/of_platform.h>
 #include <linux/soc/qcom/apr.h>
+#include "q6cvp.h"
 #include "q6mvm.h"
 #include "q6voice-downstream.h"
 
@@ -13,7 +14,6 @@ struct q6mvm {
 
 	uint16_t handle;
 };
-#define to_q6mvm(session) container_of(session, struct q6mvm, session)
 
 static struct device *q6mvm_dev = NULL; /* FIXME */
 
@@ -35,6 +35,10 @@ static int q6mvm_callback(struct apr_device *adev, struct apr_resp_pkt *data)
 	switch (result->opcode) {
 	case VSS_IMVM_CMD_CREATE_PASSIVE_CONTROL_SESSION:
 		mvm->handle = data->hdr.src_port;
+		/* fallthrough */
+	case VSS_IMVM_CMD_SET_POLICY_DUAL_CONTROL:
+	case VSS_IMVM_CMD_ATTACH_VOCPROC:
+	case VSS_IMVM_CMD_START_VOICE:
 		break;
 	default:
 		return 0; /* Unhandled command */
@@ -55,7 +59,7 @@ static int q6mvm_send(struct q6mvm *mvm, struct apr_hdr *hdr)
 	mvm->result.status = 0;
 
 	hdr->hdr_field = APR_HDR_FIELD(APR_MSG_TYPE_SEQ_CMD,
-			     APR_HDR_LEN(APR_HDR_SIZE), APR_PKT_VER);
+				       APR_HDR_LEN(APR_HDR_SIZE), APR_PKT_VER);
 	hdr->src_port = VOC_PATH_PASSIVE;
 	hdr->dest_port = mvm->handle;
 	hdr->token = 0;
@@ -70,7 +74,7 @@ static int q6mvm_send(struct q6mvm *mvm, struct apr_hdr *hdr)
 		return -ETIMEDOUT;
 
 	if (mvm->result.status > 0) {
-		dev_err(&mvm->adev->dev, "MVM command %#x failed with error %d\n",
+		dev_err(&mvm->adev->dev, "command %#x failed with error %d\n",
 			hdr->opcode, mvm->result.status);
 		return -EIO;
 	}
@@ -81,7 +85,7 @@ static int q6mvm_send(struct q6mvm *mvm, struct apr_hdr *hdr)
 static int q6mvm_do_create_session(struct q6mvm *mvm)
 {
 	struct device *dev = &mvm->adev->dev;
-	struct mvm_create_ctl_session_cmd mvm_session_cmd;
+	struct mvm_create_ctl_session_cmd cmd;
 	int ret;
 
 	dev_err(dev, "create session\n");
@@ -89,13 +93,13 @@ static int q6mvm_do_create_session(struct q6mvm *mvm)
 	if (mvm->handle)
 		return -EBUSY;
 
-	mvm_session_cmd.hdr.pkt_size = sizeof(mvm_session_cmd);
-	mvm_session_cmd.hdr.opcode = VSS_IMVM_CMD_CREATE_PASSIVE_CONTROL_SESSION;
+	cmd.hdr.pkt_size = sizeof(cmd);
+	cmd.hdr.opcode = VSS_IMVM_CMD_CREATE_PASSIVE_CONTROL_SESSION;
 
-	strlcpy(mvm_session_cmd.mvm_session.name, "default modem voice",
+	strlcpy(cmd.mvm_session.name, "default modem voice",
 		strlen("default modem voice")+1);
 
-	ret = q6mvm_send(mvm, &mvm_session_cmd.hdr);
+	ret = q6mvm_send(mvm, &cmd.hdr);
 	if (ret)
 		return ret;
 
@@ -117,6 +121,57 @@ struct q6mvm *q6mvm_create_session(void)
 		return ERR_PTR(ret);
 
 	return mvm;
+}
+
+int q6mvm_set_dual_control(struct q6mvm *mvm)
+{
+	struct device *dev = &mvm->adev->dev;
+	struct mvm_modem_dual_control_session_cmd cmd;
+
+	dev_err(dev, "set dual control\n");
+
+	if (!mvm->handle)
+		return -EINVAL;
+
+	cmd.hdr.pkt_size = sizeof(cmd);
+	cmd.hdr.opcode = VSS_IMVM_CMD_SET_POLICY_DUAL_CONTROL;
+
+	cmd.voice_ctl.enable_flag = true;
+	return q6mvm_send(mvm, &cmd.hdr);
+}
+
+int q6mvm_attach(struct q6mvm *mvm, struct q6cvp *cvp)
+{
+	struct device *dev = &mvm->adev->dev;
+	struct mvm_attach_vocproc_cmd cmd;
+
+	dev_err(dev, "attach vocproc: %d\n", cvp->handle);
+
+	if (!mvm->handle || !cvp->handle)
+		return -EINVAL;
+
+	cmd.hdr.pkt_size = sizeof(cmd);
+	cmd.hdr.opcode = VSS_IMVM_CMD_ATTACH_VOCPROC;
+
+	cmd.mvm_attach_cvp_handle.handle = cvp->handle;
+
+	return q6mvm_send(mvm, &cmd.hdr);
+}
+
+int q6mvm_start(struct q6mvm *mvm)
+{
+	struct device *dev = &mvm->adev->dev;
+	struct apr_pkt cmd;
+
+	dev_err(dev, "start\n");
+
+	if (!mvm->handle)
+		return -EINVAL;
+
+	cmd.hdr.pkt_size = APR_HDR_SIZE;
+	cmd.hdr.opcode = VSS_IMVM_CMD_START_VOICE;
+
+	return q6mvm_send(mvm, &cmd.hdr);
 }
 
 static int q6mvm_probe(struct apr_device *adev)
