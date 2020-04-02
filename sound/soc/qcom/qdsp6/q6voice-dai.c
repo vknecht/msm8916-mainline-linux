@@ -56,14 +56,13 @@ static struct snd_soc_dai_driver q6voice_dais[] = {
 
 static void voc_start(struct device *dev)
 {
-	struct q6mvm_session mvm_session;
-	int ret;
+	struct q6mvm *mvm;
 
 	dev_err(dev, "Hello from voc_start()\n");
 
-	ret = q6mvm_create_session(mvm_dev, &mvm_session);
-	if (ret) {
-		dev_err(dev, "Failed to create mvm session: %d\n", ret);
+	mvm = q6mvm_create_session();
+	if (IS_ERR(mvm)) {
+		dev_err(dev, "Failed to create mvm session: %ld\n", PTR_ERR(mvm));
 		return;
 	}
 }

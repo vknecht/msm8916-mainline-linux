@@ -2,13 +2,8 @@
 #ifndef _Q6_MVM_H
 #define _Q6_MVM_H
 
-extern struct apr_device *mvm_dev;
+struct q6mvm;
 
-struct q6mvm_session {
-	struct apr_device *adev;
-	uint16_t handle;
-};
-
-int q6mvm_create_session(struct apr_device *adev, struct q6mvm_session *session);
+struct q6mvm *q6mvm_create_session(void);
 
 #endif /*_Q6_MVM_H */

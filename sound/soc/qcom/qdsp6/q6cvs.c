@@ -3,7 +3,11 @@
 #include <linux/soc/qcom/apr.h>
 #include "q6cvs.h"
 
-struct apr_device *cvs_dev = NULL;
+struct q6cvs {
+	struct apr_device *adev;
+};
+
+static struct device *q6cvs_dev = NULL; // FIXME
 
 static int q6cvs_callback(struct apr_device *adev, struct apr_resp_pkt *data)
 {
@@ -17,10 +21,19 @@ static int q6cvs_callback(struct apr_device *adev, struct apr_resp_pkt *data)
 static int q6cvs_probe(struct apr_device *adev)
 {
 	struct device *dev = &adev->dev;
+	struct q6cvs *cvs;
 
 	dev_info(dev, "Hello World!\n");
-	cvs_dev = adev;
 
+	cvs = devm_kzalloc(dev, sizeof(*cvs), GFP_KERNEL);
+	if (!cvs)
+		return -ENOMEM;
+
+	cvs->adev = adev;
+
+	dev_set_drvdata(dev, cvs);
+
+	q6cvs_dev = dev;
 	return 0;
 }
 

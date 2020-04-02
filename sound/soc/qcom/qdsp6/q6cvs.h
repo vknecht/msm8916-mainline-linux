@@ -2,6 +2,4 @@
 #ifndef _Q6_CVS_H
 #define _Q6_CVS_H
 
-extern struct apr_device *cvs_dev;
-
 #endif /*_Q6_CVS_H */

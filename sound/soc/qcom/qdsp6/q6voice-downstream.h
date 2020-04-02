@@ -12,6 +12,8 @@
 #ifndef __QDSP6VOICE_H__
 #define __QDSP6VOICE_H__
 
+#define TIMEOUT_MS 300
+
 #define MAX_VOC_PKT_SIZE 642
 #define SESSION_NAME_LEN 20
 #define NUM_OF_MEMORY_BLOCKS 1
