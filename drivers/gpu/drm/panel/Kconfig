@@ -17,6 +17,24 @@ config DRM_PANEL_ABT_Y030XX067A
 	  Y030XX067A 320x480 3.0" panel as found in the YLM RG-280M, RG-300
 	  and RG-99 handheld gaming consoles.
 
+config DRM_PANEL_ALCATEL_IDOL3_NT35596
+	tristate "Alcatel Idol3 NT35596 panel"
+	depends on GPIOLIB && OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for the NT35596 HD
+	  video mode panel as found in some Alcatel Idol3 devices.
+
+config DRM_PANEL_ALCATEL_IDOL3_R63315
+	tristate "Alcatel Idol3 R63315 panel"
+	depends on GPIOLIB && OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for the R63315 HD
+	  video mode panel as found in some Alcatel Idol3 devices.
+
 config DRM_PANEL_ARM_VERSATILE
 	tristate "ARM Versatile panel driver"
 	depends on OF
