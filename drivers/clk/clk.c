@@ -4024,6 +4024,7 @@ __clk_register(struct device *dev, struct device_node *np, struct clk_hw *hw)
 			   !power->genpdopp_table || !power->genpdopp_num) {
 				pr_err("%s: invalid power domain for clk %s\n",
 					__func__, core->name);
+				ret = -EINVAL;
 				goto fail_ops;
 			}
 		}
@@ -4031,6 +4032,7 @@ __clk_register(struct device *dev, struct device_node *np, struct clk_hw *hw)
 			if (!power->regulator_head || !power->regulator_lock ||
 			   !list_empty(power->regulator_head)) {
 				pr_err("%s: invalid regulator\n", __func__);
+				ret = -EINVAL;
 				goto fail_ops;
 			}
 		}
