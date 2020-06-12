@@ -1879,7 +1879,9 @@
 					      <&wcnss_smp2p_in 3 IRQ_TYPE_EDGE_RISING>;
 			interrupt-names = "wdog", "fatal", "ready", "handover", "stop-ack";
 
-			power-domains = <&rpmpd MSM8939_VDDMX_AO>;
+			power-domains = <&rpmpd MSM8939_VDDCX>,
+					<&rpmpd MSM8939_VDDMX_AO>;
+			power-domain-names = "vddcx", "vddmx";
 			vddpx-supply = <&pm8916_l7>;
 
 			qcom,state = <&wcnss_smp2p_out 0>;
