@@ -9,7 +9,8 @@ on the Qualcomm WCNSS core.
 	Definition: must be one of:
 		    "qcom,riva-pil",
 		    "qcom,pronto-v1-pil",
-		    "qcom,pronto-v2-pil"
+		    "qcom,pronto-v2-pil",
+		    "qcom,pronto-v2-pd-pil"
 
 - reg:
 	Usage: required
