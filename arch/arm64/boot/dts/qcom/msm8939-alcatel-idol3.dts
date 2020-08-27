@@ -119,7 +119,8 @@
 			compatible = "linux,extcon-usb-gpio";
 			id-gpio = <&msmgpio 110 GPIO_ACTIVE_HIGH>;
 			pinctrl-names = "default";
-			pinctrl-0 = <&usb_id_default>;
+			pinctrl-0 = <&usb_id_default &usb_id_switch_default>;
+			vbus-supply = <&usb_otg_vbus>;
 		};
 
 		mdss@1a00000 {
@@ -370,6 +371,35 @@
 };
 #endif // I2C2GYRO
 
+&blsp_i2c4 {
+	status = "okay";
+	battery@14 {
+		compatible = "qcom,smb1360";
+		reg = <0x14>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <62 IRQ_TYPE_EDGE_FALLING>;
+		io-channels = <&pm8916_vadc VADC_LR_MUX2_BAT_ID>;
+		io-channel-names = "batt-id";
+		pinctrl-names = "default";
+		pinctrl-0 = <&smb_int_default>;
+		qcom,float-voltage-mv = <4350>;
+		qcom,charging-timeout = <0>;
+		qcom,recharge-thresh-mv = <100>;
+		qcom,iterm-ma = <100>;
+		qcom,chg-inhibit-disabled;
+		qcom,shdn-after-pwroff;
+		qcom,fg-reset-at-pon;
+		qcom,fg-reset-threshold-mv = <200>;
+		qcom,batt-profile-select;
+		qcom,batt-id-vref-uv = <1800000>;
+		qcom,batt-id-rpullup-kohm = <100>;
+		qcom,profile-a-rid-kohm = <33>;
+		qcom,profile-b-rid-kohm = <52>;
+
+		usb_otg_vbus: usb-otg-vbus {};
+	};
+};
+
 &msmgpio {
 
 	ts_pins: ts_pins {
@@ -475,6 +505,29 @@
                 };
         };
 
+	usb_id_switch_default: usb_id_switch_default {
+		pinmux {
+			function = "gpio";
+			pins = "gpio121";
+		};
+		pinconf {
+			pins = "gpio121";
+			drive-strength = <2>;
+			output-high;
+		};
+	};
+
+	smb_int_default: smb_int_default {
+		pinmux {
+			function = "gpio";
+			pins = "gpio62";
+		};
+		pinconf {
+			pins = "gpio62";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
 };
 
 &pm8916_mpps {
