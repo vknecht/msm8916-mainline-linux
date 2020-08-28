@@ -493,8 +493,8 @@
 				 <&gcc GCC_BLSP1_QUP2_I2C_APPS_CLK>;
 			clock-names = "iface", "core";
 			pinctrl-names = "default", "sleep";
-			pinctrl-0 = <&i2c0_default>;
-			pinctrl-1 = <&i2c0_sleep>;
+			pinctrl-0 = <&i2c2_default>;
+			pinctrl-1 = <&i2c2_sleep>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "ok";
@@ -530,7 +530,7 @@
 			status = "ok";
 		};
 
-		blsp_spi0: spi@78b7000 {
+		blsp_spi3: spi@78b7000 {
 			compatible = "qcom,spi-qup-v2.2.1";
 			reg = <0x78b7000 0x600>;
 			interrupts = <GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>;
@@ -540,8 +540,8 @@
 			dmas = <&blsp_dma 5>, <&blsp_dma 4>;
 			dma-names = "rx", "tx";
 			pinctrl-names = "default", "sleep";
-			pinctrl-0 = <&spi0_default>;
-			pinctrl-1 = <&spi0_sleep>;
+			pinctrl-0 = <&spi3_default>;
+			pinctrl-1 = <&spi3_sleep>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";
@@ -1744,4 +1744,4 @@
 	};
 };
 
-#include "msm8939-pins.dtsi"
+#include "msm8916-pins.dtsi"
