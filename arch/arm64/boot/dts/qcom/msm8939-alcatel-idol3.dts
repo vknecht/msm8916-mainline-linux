@@ -10,7 +10,6 @@
 #include <dt-bindings/sound/apq8016-lpass.h>
 
 #define FAN53555 0
-#define I2C2GYRO 0
 
 / {
 	model = "Alcatel OneTouch Idol 3 (5.5)";
@@ -124,7 +123,7 @@
 		};
 
 		mdss@1a00000 {
-			status = "ok";
+			status = "okay";
 			dsi@1a98000 {
 				#address-cells = <1>;
 				#size-cells = <0>;
@@ -147,7 +146,6 @@
 			//	qcom,playback-sd-lines = <1>;
 			//};
 		};
-
 
 		sound {
 			compatible = "qcom,apq8016-sbc-sndcard";
@@ -197,7 +195,7 @@
 
 		i2c@78b9000 {
 			synaptics@20 {
-				status = "disabled";
+				status = "okay";
 				compatible = "syna,rmi4-i2c";
 				reg = <0x20>;
 				pinctrl-names = "default";
@@ -251,12 +249,12 @@
 				onnn,min-slew-ns = <416>;
 				onnn,max-slew-ns = <3333>;
 				onnn,min-setpoint = <600000>;
-				onnn,vsel-gpio = <&msmgpio 111 1>;
+				onnn,vsel-gpio = <&msmgpio 111 GPIO_ACTIVE_LOW>;
 				onnn,discharge-enable;
 				onnn,restore-reg;
 			};
-#if FAN53555
-			reg_arm_dram: regulator@60 {
+
+			fan53555: fan53555-regulator@60 {
 				compatible = "fcs,fan53555";
 				pinctrl-names = "default";
 				pinctrl-0 = <&ext_buck_vsel>;
@@ -265,9 +263,8 @@
 				regulator-max-microvolt = <1350000>;
 				regulator-ramp-delay = <1250>;
 				regulator-always-on;
-				vsel-gpios = <&msmgpio 111 1>;
+				vsel-gpios = <&msmgpio 111 GPIO_ACTIVE_LOW>;
 			};
-#endif
 		};
 
 		wcnss@a21b000 {
@@ -329,13 +326,27 @@
 		};
 	};
 
+	gpio-lid-sensor {
+		compatible = "gpio-keys";
+
+		label = "GPIO Lid Sensor";
+
+		lid-sensor {
+			label = "Lid Sensor";
+			gpios = <&msmgpio 98 GPIO_ACTIVE_LOW>;
+			linux,input-type = <EV_SW>;
+			linux,code = <SW_LID>;
+			linux,can-disable;
+		};
+	};
+
 	reg_lcd_enp: regulator-lcd-enp {
 		compatible = "regulator-fixed";
 		regulator-name = "lcd_enp";
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <1800000>;
 		regulator-boot-on; // allows fb console to show up briefly at boot without always-on
-		gpio = <&msmgpio 105 0>;
+		gpio = <&msmgpio 105 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 		pinctrl-names = "default";
 		pinctrl-0 = <&lcd_enp_default>;
@@ -347,29 +358,48 @@
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <1800000>;
 		regulator-boot-on; // allows fb console to show up briefly at boot without always-on
-		gpio = <&msmgpio 106 0>;
+		gpio = <&msmgpio 106 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 		pinctrl-names = "default";
 		pinctrl-0 = <&lcd_enn_default>;
 	};
 };
 
-#if I2C2GYRO
 &blsp_i2c2 {
 	status = "okay";
-	//tsl2772@39 {
-	//};
+	magnetometer@c {
+		compatible = "asahi-kasei,ak09911";
+		reg = <0x0c>;
+		vdd-supply = <&pm8916_l17>;
+		vid-supply = <&pm8916_l6>;
+		reset-gpios = <&msmgpio 100 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mag_reset_default>;
+		mount-matrix = "0", "1", "0",
+			      "-1", "0", "0",
+			       "0", "0", "1";
+	};
+
+	proximity@39 {
+		compatible = "amstaos,tsl2772";
+		reg = <0x39>;
+		interrupts-extended = <&msmgpio 34 IRQ_TYPE_EDGE_FALLING>;
+		vdd-supply = <&pm8916_l17>;
+		vddio-supply = <&pm8916_l6>;
+		amstaos,proximity-diodes = <0>;
+		led-max-microamp = <100000>;
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&proximity_default>;
+		pinctrl-1 = <&proximity_sleep>;
+	};
+
 	gyroscope@68 {
 		compatible = "bosch,bmg160";
 		reg = <0x68>;
 		interrupt-parent = <&msmgpio>;
 		interrupts = <23 IRQ_TYPE_EDGE_RISING>;
-
-		//vdd-supply = <&pm8916_l17>;
-		//vddio-supply = <&pm8916_l6>;
 	};
 };
-#endif // I2C2GYRO
 
 &blsp_i2c4 {
 	status = "okay";
@@ -404,129 +434,113 @@
 
 	ts_pins: ts_pins {
 		ts_int_active: pmx_ts_int_active {
-			pinmux {
-				pins = "gpio13";
-				function = "gpio";
-			};
+			pins = "gpio13";
+			function = "gpio";
 
-			pinconf {
-				pins = "gpio13";
-				drive-strength = <16>;
-				bias-pull-up;
-			};
+			drive-strength = <16>;
+			bias-pull-up;
 		};
 
 		ts_reset_active: pmx_ts_reset_active {
-			pinmux {
-				pins = "gpio12";
-				function = "gpio";
-			};
+			pins = "gpio12";
+			function = "gpio";
 
-			pinconf {
-				pins = "gpio12";
-				drive-strength = <16>;
-				bias-pull-up;
-			};
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+	};
+
+	mag_reset_default: mag-reset-default {
+		pins = "gpio100";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+        };
+
+	pmx_proximity {
+		proximity_default: proximity-default {
+			pins = "gpio34";
+			function = "gpio";
+
+			drive-strength = <6>;
+			bias-pull-up;
+		};
+
+		proximity_sleep: proximity-sleep {
+			pins = "gpio34";
+			function = "gpio";
+
+			drive-strength = <2>;
+			bias-pull-down;
 		};
 	};
 
 	pmx_mdss {
 		mdss_default: mdss_default {
-			pinmux {
-				function = "gpio";
-				pins = "gpio25";
-			};
-			pinconf {
-				pins = "gpio25";
-				drive-strength = <8>;
-				bias-disable;
-			};
+			pins = "gpio25";
+			function = "gpio";
+
+			drive-strength = <8>;
+			bias-disable;
 		};
 
 		mdss_sleep: mdss_sleep {
-			pinmux {
-				function = "gpio";
-				pins = "gpio25";
-			};
-			pinconf {
-				pins = "gpio25";
-				drive-strength = <2>;
-				bias-pull-down;
-			};
+			pins = "gpio25";
+			function = "gpio";
+
+			drive-strength = <2>;
+			bias-pull-down;
 		};
 	};
 
 	lcd_enp_default: lcd_enp_default {
-		pinmux {
-			function = "gpio";
-			pins = "gpio105";
-		};
-		pinconf {
-			pins = "gpio105";
-			drive-strength = <2>;
-			bias-pull-up;
-			output-high;
-		};
+		pins = "gpio105";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-pull-up;
+		output-high;
 	};
 
 	lcd_enn_default: lcd_enn_default {
-		pinmux {
-			function = "gpio";
-			pins = "gpio106";
-		};
-		pinconf {
-			pins = "gpio106";
-			drive-strength = <2>;
-			bias-pull-up;
-			output-high;
-		};
+		pins = "gpio106";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-pull-up;
+		output-high;
 	};
 
 	ext_buck_vsel: ext_buck_vsel {
-		pinmux {
-			function = "gpio";
-			pins = "gpio111";
-		};
-		pinconf{
-			pins = "gpio111";
-			drive-strength = <2>;
-		};
+		pins = "gpio111";
+		function = "gpio";
+
+		drive-strength = <2>;
 	};
 
 	usb_id_default: usb_id_default {
-                pinmux {
-                        function = "gpio";
-                        pins = "gpio110";
-                };
-                pinconf {
-                        pins = "gpio110";
-                        drive-strength = <8>;
-                        bias-pull-up;
-                };
+		pins = "gpio110";
+		function = "gpio";
+
+		drive-strength = <8>;
+		bias-pull-up;
         };
 
 	usb_id_switch_default: usb_id_switch_default {
-		pinmux {
-			function = "gpio";
-			pins = "gpio121";
-		};
-		pinconf {
-			pins = "gpio121";
-			drive-strength = <2>;
-			output-high;
-		};
+		pins = "gpio121";
+		function = "gpio";
+
+		drive-strength = <2>;
+		output-high;
 	};
 
 	smb_int_default: smb_int_default {
-		pinmux {
-			function = "gpio";
-			pins = "gpio62";
-		};
-		pinconf {
-			pins = "gpio62";
-			drive-strength = <2>;
-			bias-pull-up;
-		};
+		pins = "gpio62";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-pull-up;
 	};
 };
 
