@@ -625,6 +625,15 @@ config DRM_PANEL_SHARP_LS060T1SX01
 	  FullHD (1080x1920) DSI panel as found in Dragonboard Display Adapter
 	  Bundle.
 
+config DRM_PANEL_SHARP_RSP61322
+	tristate "Sharp RSP61322 HD video mode panel"
+	depends on GPIOLIB && OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for Sharp RSP61322 HD
+	  DSI video mode panel
+
 config DRM_PANEL_SITRONIX_ST7701
 	tristate "Sitronix ST7701 panel driver"
 	depends on OF
