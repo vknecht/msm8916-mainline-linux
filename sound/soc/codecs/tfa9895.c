@@ -4,9 +4,12 @@
  * Copyright (C) 2014-2020 NXP Semiconductors, All Rights Reserved.
  */
 
+#include <linux/gpio.h>
 #include <linux/i2c.h>
 #include <linux/module.h>
+#include <linux/of.h>
 #include <linux/regmap.h>
+#include <linux/regulator/consumer.h>
 #include <sound/soc.h>
 
 #define TFA98XX_STATUSREG		0x00
@@ -20,6 +23,8 @@
 #define TFA98XX_SPKR_CALIBRATION	0x08
 #define TFA98XX_SYS_CTRL		0x09
 #define TFA98XX_I2S_SEL_REG		0x0a
+#define TFA98XX_CURRENTSENSE3		0x48
+#define TFA98XX_CURRENTSENSE4		0x49
 
 #define TFA98XX_I2SREG_CHSA		(0x3 << 6)
 #define TFA98XX_I2SREG_I2SSR_SHIFT	12
@@ -38,6 +43,18 @@
 #define TFA98XX_SYS_CTRL_AMPC		(0x1 << 6)
 
 #define TFA9895_REVISION		0x12
+#define TFA9897_REVISION		0xb97
+
+#define I2S1_CHANNEL_LEFT		0x00
+#define I2S1_CHANNEL_RIGHT		(0x1 << 6)
+
+struct tfa9897_data {
+	struct i2c_client	*client;
+	struct gpio_desc	*reset_gpiod;
+	struct gpio_desc	*switch_gpiod;
+	struct regulator	*vdd;
+	u32			channel;
+};
 
 static int tfa9895_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
@@ -138,16 +155,86 @@ static const struct reg_sequence tfa9895_reg_init[] = {
 	/* TFA98XX_SYSCTRL_DCA = 0 */
 	{ TFA98XX_SYS_CTRL, 0x024d },
 	{ 0x41, 0x0308 },
-	{ 0x49, 0x0e82 },
+	{ TFA98XX_CURRENTSENSE4, 0x0e82 },
 };
 
-static int tfa9895_dsp_bypass(struct regmap *regmap)
+static const struct reg_sequence tfa9897_reg_switch[] = {
+	{ 0x14, 0x0000 },
+	{ TFA98XX_I2SREG, 0x880b },
+	{ TFA98XX_SYS_CTRL, 0x8209 },
+	{ TFA98XX_SYS_CTRL, 0x0608 },
+};
+
+static int tfa9897_init(struct i2c_client *i2c, struct regmap *regmap) {
+	struct device *dev = &i2c->dev;
+	struct tfa9897_data *tfa9897;
+	int ret;
+
+	tfa9897 = devm_kzalloc(dev, sizeof(*tfa9897), GFP_KERNEL);
+	if (!tfa9897)
+		return -ENOMEM;
+
+	if (of_property_read_u32(dev->of_node, "channel", &tfa9897->channel))
+		tfa9897->channel = I2S1_CHANNEL_LEFT;
+
+	tfa9897->reset_gpiod = devm_gpiod_get_optional(dev, "reset", GPIOD_IN);
+	if (IS_ERR(tfa9897->reset_gpiod))
+		return PTR_ERR(tfa9897->reset_gpiod);
+
+	tfa9897->switch_gpiod = devm_gpiod_get_optional(dev, "switch", GPIOD_OUT_HIGH);
+	if (IS_ERR(tfa9897->switch_gpiod))
+		return PTR_ERR(tfa9897->switch_gpiod);
+
+	/* Fetch the regulators */
+	tfa9897->vdd = devm_regulator_get(dev, "vdd");
+	if (IS_ERR(tfa9897->vdd))
+		return PTR_ERR(tfa9897->vdd);
+
+	ret = regulator_enable(tfa9897->vdd);
+	if (ret) {
+		dev_warn(dev, "Failed to enable specified Vdd supply\n");
+		return ret;
+	}
+
+	ret = regmap_write(regmap, TFA98XX_CURRENTSENSE3, 0x0300);
+	if (ret) {
+		dev_err(dev, "tfa9897: Failed to set TFA98XX_CURRENTSENSE3\n");
+		return ret;
+	}
+
+	ret = regmap_update_bits(regmap, TFA98XX_CURRENTSENSE4, 0x1, 0x1);
+	if (ret) {
+		dev_err(dev, "tfa9897: Failed to set TFA98XX_CURRENTSENSE4\n");
+		return ret;
+	}
+
+	gpiod_set_value_cansleep(tfa9897->reset_gpiod, 1);
+	msleep(5);
+	gpiod_set_value_cansleep(tfa9897->reset_gpiod, 0);
+
+	/* From downstream sound/soc/msm/tfa9897.c#L873-L876 */
+	ret = regmap_multi_reg_write(regmap, tfa9897_reg_switch,
+				     ARRAY_SIZE(tfa9897_reg_switch));
+
+	/* Set amp on! */
+	ret = regmap_update_bits(regmap, TFA98XX_SYS_CTRL, (1 << 3), (1 << 3));
+
+	/* Switch really required ? */
+	//gpiod_set_value_cansleep(switch_gpiod, 1);
+
+	tfa9897->client = i2c;
+	i2c_set_clientdata(i2c, tfa9897);
+
+	return 0;
+}
+
+static int tfa9895_dsp_bypass(struct regmap *regmap, u16 channel)
 {
 	int ret;
 
-	/* Clear CHSA to bypass DSP and take input from I2S 1 (left channel) */
+	/* Clear CHSA to bypass DSP and take input from I2S 1 */
 	ret = regmap_update_bits(regmap, TFA98XX_I2SREG,
-				 TFA98XX_I2SREG_CHSA, 0);
+				 TFA98XX_I2SREG_CHSA, channel);
 	if (ret)
 		return ret;
 
@@ -161,6 +248,7 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 {
 	struct device *dev = &i2c->dev;
 	struct regmap *regmap;
+	struct tfa9897_data *tfa9897;
 	unsigned int val;
 	int ret;
 
@@ -174,20 +262,33 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	if (val != TFA9895_REVISION) {
-		dev_err(dev, "invalid revision number, expected %#x, got %#x\n",
-			TFA9895_REVISION, val);
+	switch(val) {
+	case TFA9895_REVISION:
+		dev_info(dev, "found TFA9895\n");
+		ret = regmap_multi_reg_write(regmap, tfa9895_reg_init,
+					     ARRAY_SIZE(tfa9895_reg_init));
+		if (ret) {
+			dev_err(dev, "failed to initialize registers: %d\n", ret);
+			return ret;
+		}
+		ret = tfa9895_dsp_bypass(regmap, I2S1_CHANNEL_LEFT);
+		break;
+	case TFA9897_REVISION:
+		dev_info(dev, "found TFA9897\n");
+		ret = tfa9897_init(i2c, regmap);
+		if (ret) {
+			dev_err(dev, "failed to initialize tfa9897: %d\n", ret);
+			return ret;
+		}
+		tfa9897 = i2c_get_clientdata(i2c);
+		ret = tfa9895_dsp_bypass(regmap,
+			tfa9897->channel > 0 ? I2S1_CHANNEL_RIGHT : I2S1_CHANNEL_LEFT);
+		break;
+	default:
+		dev_err(dev, "invalid revision number %#x\n", val);
 		return -EINVAL;
 	}
 
-	ret = regmap_multi_reg_write(regmap, tfa9895_reg_init,
-				     ARRAY_SIZE(tfa9895_reg_init));
-	if (ret) {
-		dev_err(dev, "failed to initialize registers: %d\n", ret);
-		return ret;
-	}
-
-	ret = tfa9895_dsp_bypass(regmap);
 	if (ret) {
 		dev_err(dev, "failed to enable dsp bypass: %d\n", ret);
 		return ret;
@@ -199,6 +300,7 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 
 static const struct of_device_id tfa9895_of_match[] = {
 	{ .compatible = "nxp,tfa9895", },
+	{ .compatible = "nxp,tfa9897", },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, tfa9895_of_match);
