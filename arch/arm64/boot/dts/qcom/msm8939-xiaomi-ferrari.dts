@@ -294,70 +294,7 @@
 		};
 	};
 };
-/*
-*&blsp_i2c1 {
-*	status = "okay";
-*
-*	lm3533@38 {
-*		compatible = "ti,lm3533";
-*		reg = <0x38>;
-*
-*		hwen-gpios = <&msmgpio 98 GPIO_ACTIVE_HIGH>;
-*
-*		ti,boost-freq-hz = <500000>;
-*		ti,boost-ovp-mv = <32000>;
-*
-*		#address-cells = <1>;
-*		#size-cells = <0>;
-*
-*		backlight: backlight@0 {
-*			compatible = "ti,lm3533-backlight";
-*			reg = <0>;
-*					
-*			default-brightness = <82>;
-*			label = "lm3533-backlight0";
-*			led-max-microamp = <20200>;
-*			ti,pwm-zones = <1>;
-*		};
-*
-*		led@0 {
-*			compatible = "ti,lm3533-led";
-*			reg = <0>;
-*					
-*			label = "red";
-*			led-max-microamp = <5000>;
-*			ti,pwm-zones = <0>;
-*		};
-*
-*		led@1 {
-*			compatible = "ti,lm3533-led";
-*			reg = <1>;
-*					
-*			label = "blue";
-*			led-max-microamp = <5000>;
-*			ti,pwm-zones = <0>;
-*		};
-*
-*		led@2 {
-*			compatible = "ti,lm3533-led";
-*			reg = <2>;
-*					
-*			label = "green";
-*			led-max-microamp = <5000>;
-*			ti,pwm-zones = <0>;
-*		};
-*
-*		led@3 {
-*			compatible = "ti,lm3533-led";
-*			reg = <3>;
-*					
-*			label = "button-backlight";
-*			led-max-microamp = <5000>;
-*			ti,pwm-zones = <0>;
-*		};
-*	};
-*};
-*/
+
 &blsp_i2c4 {
 	status = "okay";
 
@@ -366,10 +303,13 @@
 		reg = <0x14>;
 
 		interrupt-parent = <&msmgpio>;
-		interrupts = <62 IRQ_TYPE_EDGE_FALLING>; //IRQ_TYPE_LEVEL_LOW>;
+		interrupts = <62 IRQ_TYPE_EDGE_FALLING>;
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&smb_int_default>;
+
+		io-channels = <&pm8916_vadc VADC_LR_MUX2_BAT_ID>;
+		io-channel-names = "batt-id";
 
 		qcom,float-voltage-mv = <4400>;
 		qcom,recharge-thresh-mv = <100>;
@@ -601,7 +541,6 @@
 		reg = <0>;
 
 		power-supply = <&pm8916_l17>;
-		//backlight = <&backlight>;
 		reset-gpios = <&msmgpio 25 GPIO_ACTIVE_HIGH>;
 
 		ports {
