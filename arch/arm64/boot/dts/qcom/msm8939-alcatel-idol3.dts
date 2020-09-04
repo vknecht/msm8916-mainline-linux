@@ -4,6 +4,7 @@
 
 #include "msm8939.dtsi"
 #include "pm8916.dtsi"
+#include "arm/qcom-msm8939-no-psci.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/pinctrl/qcom,pmic-mpp.h>
@@ -20,7 +21,6 @@
 	};
 
 	chosen {
-		bootargs = "console=ttyMSM0,115200";
 		stdout-path = "serial0";
 	};
 
