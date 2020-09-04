@@ -21,29 +21,6 @@
 	chosen {
 		bootargs = "console=ttyMSM0,115200";
 		stdout-path = "serial0";
-
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
-
-		framebuffer0: framebuffer@83000000 {
-			status= "disabled";
-			compatible = "simple-framebuffer";
-			reg = <0x0 0x83200000 0x0 (1080 * 1920 * 3)>;
-			width = <1080>;
-			height = <1920>;
-			stride = <(1080 * 3)>;
-			format = "r8g8b8";
-			power-domains = <&gcc MDSS_GDSC>;
-			clocks = <&gcc GCC_MDSS_AHB_CLK>,
-				 <&gcc GCC_MDSS_VSYNC_CLK>,
-				 <&gcc GCC_MDSS_AXI_CLK>,
-				 <&gcc GCC_MDSS_MDP_CLK>,
-				 <&gcc GCC_MDSS_BYTE0_CLK>,
-				 <&gcc GCC_MDSS_PCLK0_CLK>,
-				 <&gcc GCC_MDSS_ESC0_CLK>,
-				 <&xo_board>;
-		};
 	};
 
 	reserved-memory {
@@ -67,214 +44,6 @@
 		};	
 	};
 
-	soc {
-		sdhci@7824000 {
-			status = "okay";
-
-			vmmc-supply = <&pm8916_l8>;
-			vqmmc-supply = <&pm8916_l5>;
-
-			pinctrl-names = "default", "sleep";
-			pinctrl-0 = <&sdc1_clk_on &sdc1_cmd_on &sdc1_data_on>;
-			pinctrl-1 = <&sdc1_clk_off &sdc1_cmd_off &sdc1_data_off>;
-		};
-
-		//serial@78b0000 {
-		//	status = "okay";
-		//	pinctrl-names = "default", "sleep";
-		//	pinctrl-0 = <&blsp1_uart2_default>;
-		//	pinctrl-1 = <&blsp1_uart2_sleep>;
-		//};
-
-		usb@78d9000 {
-			status = "okay";
-			extcon = <&usb_id>, <&usb_id>;
-
-			hnp-disable;
-			srp-disable;
-			adp-disable;
-
-			ulpi {
-				phy {
-					extcon = <&usb_id>;
-					v1p8-supply = <&pm8916_l7>;
-					v3p3-supply = <&pm8916_l13>;
-				};
-			};
-		};
-
-		usb_id: usb-id {
-			compatible = "linux,extcon-usb-gpio";
-			id-gpio = <&msmgpio 110 GPIO_ACTIVE_HIGH>;
-			pinctrl-names = "default";
-			pinctrl-0 = <&usb_id_default>;
-			vbus-supply = <&usb_otg_vbus>;
-		};
-
-		wcnss@a21b000 {
-			status = "okay";
-
-			iris {
-				compatible = "qcom,wcn3680";
-			};
-		};
-
-		mdss@1a00000 {
-			status = "okay";
-			dsi@1a98000 {
-				#address-cells = <1>;
-				#size-cells = <0>;
-
-				vdda-supply = <&pm8916_l2>;
-				vddio-supply = <&pm8916_l6>;
-			};
-
-			dsi-phy@1a98300 {
-				vddio-supply = <&pm8916_l6>;
-				qcom,dsi-phy-regulator-ldo-mode;
-			};
-		};
-
-		i2c@78b9000 {
-			atmel-maxtouch@4a {
-				status = "okay";
-				compatible = "atmel,mxt-ts-336t";
-				reg = <0x4a>;
-				
-				interrupt-parent = <&msmgpio>;
-				interrupts = <13 0x2008>;
-				
-				atmel,irqflags = <0x2008>;
-				atmel,irq-gpio = <&msmgpio 13 0x2008>;
-				atmel,config-array-size = <0x04>;
-				atmel,gpio-mask = <&l2ccc_0>;
-				atmel,default-config = <0x01>;
-				atmel,mxt-fw-name = "maxtouch.fw";
-				atmel,power-ldo-gpio = <&msmgpio 9 GPIO_ACTIVE_HIGH>;
-				atmel,power-ts-gpio = <&msmgpio 78 GPIO_ACTIVE_HIGH>;
-				atmel,reset-gpio = <&msmgpio 12 GPIO_ACTIVE_HIGH>;
-				
-				pinctrl-names = "pmx_ts_active\0pmx_ts_suspend";
-				pinctrl-0 = <&ts_int_active &ts_reset_active &ts_pwr_active>;
-				pinctrl-1 = <&ts_int_suspend &ts_reset_suspend &ts_pwr_suspend>;
-				
-				atmel,cfg_1 {
-					atmel,atchthr-sensitive = <0x06>;
-					atmel,build = <0xaa>;
-					atmel,family-id = <0xa4>;
-					atmel,key-codes = <0x66 0x8b 0x9e>;
-					atmel,key-num = <0x03>;
-					atmel,mult-intthr-not-sensitive = <0x11>;
-					atmel,mult-intthr-sensitive = <0x0c>;
-					atmel,mult-tchthr-not-sensitive = <0x00>;
-					atmel,mult-tchthr-sensitive = <0x00>;
-					atmel,mxt-cfg-name = "maxtouch_biel.fw";
-					atmel,panel-id = <0x33>;
-					atmel,rev-id = <0x02>;
-					atmel,self-chgtime-max = <0x00>;
-					atmel,self-chgtime-min = <0x00>;
-					atmel,selfintthr-stylus = <0x00>;
-					atmel,t71-tchthr-pos = <0x16>;
-					atmel,variant-id = <0x15>;
-					atmel,vendor-id = <0x0c>;
-					atmel,version = <0x20>;
-					atmel,wake-up-self-adcx = <0x00>;
-				};
-
-				atmel,cfg_2 {
-					atmel,atchthr-sensitive = <0x06>;
-					atmel,build = <0xaa>;
-					atmel,family-id = <0xa4>;
-					atmel,key-codes = <0x66 0x8b 0x9e 0x74>;
-					atmel,key-num = <0x04>;
-					atmel,mult-intthr-not-sensitive = <0x11>;
-					atmel,mult-intthr-sensitive = <0x0c>;
-					atmel,mult-tchthr-not-sensitive = <0x00>;
-					atmel,mult-tchthr-sensitive = <0x00>;
-					atmel,mxt-cfg-name = "maxtouch_biel.fw";
-					atmel,panel-id = <0x31>;
-					atmel,rev-id = <0x02>;
-					atmel,self-chgtime-max = <0x00>;
-					atmel,self-chgtime-min = <0x00>;
-					atmel,selfintthr-stylus = <0x00>;
-					atmel,t71-tchthr-pos = <0x16>;
-					atmel,variant-id = <0x15>;
-					atmel,vendor-id = <0x0c>;
-					atmel,version = <0x21>;
-					atmel,wake-up-self-adcx = <0x10>;
-				};
-
-				atmel,cfg_3 {
-					atmel,atchthr-sensitive = <0x06>;
-					atmel,build = <0xaa>;
-					atmel,family-id = <0xa4>;
-					atmel,key-codes = <0x66 0x8b 0x9e 0x74>;
-					atmel,key-num = <0x04>;
-					atmel,mult-intthr-not-sensitive = <0x11>;
-					atmel,mult-intthr-sensitive = <0x0c>;
-					atmel,mult-tchthr-not-sensitive = <0x00>;
-					atmel,mult-tchthr-sensitive = <0x00>;
-					atmel,mxt-cfg-name = "maxtouch_biel.fw";
-					atmel,panel-id = <0x35>;
-					atmel,rev-id = <0x02>;
-					atmel,self-chgtime-max = <0x00>;
-					atmel,self-chgtime-min = <0x00>;
-					atmel,selfintthr-stylus = <0x00>;
-					atmel,t71-tchthr-pos = <0x16>;
-					atmel,variant-id = <0x15>;
-					atmel,vendor-id = <0x0c>;
-					atmel,version = <0x21>;
-					atmel,wake-up-self-adcx = <0x10>;
-				};
-
-				atmel,cfg_4 {
-					atmel,atchthr-sensitive = <0x06>;
-					atmel,build = <0xaa>;
-					atmel,family-id = <0xa4>;
-					atmel,key-codes = <0x66 0x8b 0x9e 0x74>;
-					atmel,key-num = <0x04>;
-					atmel,mult-intthr-not-sensitive = <0x11>;
-					atmel,mult-intthr-sensitive = <0x0c>;
-					atmel,mult-tchthr-not-sensitive = <0x00>;
-					atmel,mult-tchthr-sensitive = <0x00>;
-					atmel,mxt-cfg-name = "maxtouch_biel.fw";
-					atmel,panel-id = <0x36>;
-					atmel,rev-id = <0x02>;
-					atmel,self-chgtime-max = <0x00>;
-					atmel,self-chgtime-min = <0x00>;
-					atmel,selfintthr-stylus = <0x00>;
-					atmel,t71-tchthr-pos = <0x16>;
-					atmel,variant-id = <0x15>;
-					atmel,vendor-id = <0x0c>;
-					atmel,version = <0x21>;
-					atmel,wake-up-self-adcx = <0x10>;
-				};				
-			};
-		};
-		/*
-		 * Attempting to enable these devices causes a "synchronous
-		 * external abort". Suspected cause is that the debug power
-		 * domain is not enabled by default on this device.
-		 * Disable these devices for now to avoid the crash.
-		 *
-		 * See: https://lore.kernel.org/linux-arm-msm/20190618202623.GA53651@gerhold.net/
-		 */
-		tpiu@820000 { status = "disabled"; };
-		funnel@821000 { status = "disabled"; };
-		replicator@824000 { status = "disabled"; };
-		etf@825000 { status = "disabled"; };
-		etr@826000 { status = "disabled"; };
-		funnel@841000 { status = "disabled"; };
-		debug@850000 { status = "disabled"; };
-		debug@852000 { status = "disabled"; };
-		debug@854000 { status = "disabled"; };
-		debug@856000 { status = "disabled"; };
-		etm@85c000 { status = "disabled"; };
-		etm@85d000 { status = "disabled"; };
-		etm@85e000 { status = "disabled"; };
-		etm@85f000 { status = "disabled"; };
-	};
-
 	gpio-keys {
 		compatible = "gpio-keys";
 		input-name = "gpio-keys";
@@ -292,6 +61,14 @@
 			wakeup-source;
 			debounce-interval = <15>;
 		};
+	};
+
+	usb_id: usb-id {
+			compatible = "linux,extcon-usb-gpio";
+			id-gpio = <&msmgpio 110 GPIO_ACTIVE_HIGH>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&usb_id_default>;
+			vbus-supply = <&usb_otg_vbus>;
 	};
 };
 
@@ -326,6 +103,124 @@
 		qcom,profile-c-rid-kohm = <50>;
 
 		usb_otg_vbus: usb-otg-vbus {};
+	};
+};
+
+&blsp_i2c5 {
+	status = "okay";
+	atmel-maxtouch@4a {
+		status = "okay";
+		compatible = "atmel,mxt-ts-336t";
+		reg = <0x4a>;
+		
+		interrupt-parent = <&msmgpio>;
+		interrupts = <13 0x2008>;
+		
+		atmel,irqflags = <0x2008>;
+		atmel,irq-gpio = <&msmgpio 13 0x2008>;
+		atmel,config-array-size = <0x04>;
+		atmel,gpio-mask = <&l2ccc_0>;
+		atmel,default-config = <0x01>;
+		atmel,mxt-fw-name = "maxtouch.fw";
+		atmel,power-ldo-gpio = <&msmgpio 9 GPIO_ACTIVE_HIGH>;
+		atmel,power-ts-gpio = <&msmgpio 78 GPIO_ACTIVE_HIGH>;
+		atmel,reset-gpio = <&msmgpio 12 GPIO_ACTIVE_HIGH>;
+		
+		pinctrl-names = "pmx_ts_active\0pmx_ts_suspend";
+		pinctrl-0 = <&ts_int_active &ts_reset_active &ts_pwr_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend &ts_pwr_suspend>;
+		
+		atmel,cfg_1 {
+			atmel,atchthr-sensitive = <0x06>;
+			atmel,build = <0xaa>;
+			atmel,family-id = <0xa4>;
+			atmel,key-codes = <0x66 0x8b 0x9e>;
+			atmel,key-num = <0x03>;
+			atmel,mult-intthr-not-sensitive = <0x11>;
+			atmel,mult-intthr-sensitive = <0x0c>;
+			atmel,mult-tchthr-not-sensitive = <0x00>;
+			atmel,mult-tchthr-sensitive = <0x00>;
+			atmel,mxt-cfg-name = "maxtouch_biel.fw";
+			atmel,panel-id = <0x33>;
+			atmel,rev-id = <0x02>;
+			atmel,self-chgtime-max = <0x00>;
+			atmel,self-chgtime-min = <0x00>;
+			atmel,selfintthr-stylus = <0x00>;
+			atmel,t71-tchthr-pos = <0x16>;
+			atmel,variant-id = <0x15>;
+			atmel,vendor-id = <0x0c>;
+			atmel,version = <0x20>;
+			atmel,wake-up-self-adcx = <0x00>;
+		};
+
+		atmel,cfg_2 {
+			atmel,atchthr-sensitive = <0x06>;
+			atmel,build = <0xaa>;
+			atmel,family-id = <0xa4>;
+			atmel,key-codes = <0x66 0x8b 0x9e 0x74>;
+			atmel,key-num = <0x04>;
+			atmel,mult-intthr-not-sensitive = <0x11>;
+			atmel,mult-intthr-sensitive = <0x0c>;
+			atmel,mult-tchthr-not-sensitive = <0x00>;
+			atmel,mult-tchthr-sensitive = <0x00>;
+			atmel,mxt-cfg-name = "maxtouch_biel.fw";
+			atmel,panel-id = <0x31>;
+			atmel,rev-id = <0x02>;
+			atmel,self-chgtime-max = <0x00>;
+			atmel,self-chgtime-min = <0x00>;
+			atmel,selfintthr-stylus = <0x00>;
+			atmel,t71-tchthr-pos = <0x16>;
+			atmel,variant-id = <0x15>;
+			atmel,vendor-id = <0x0c>;
+			atmel,version = <0x21>;
+			atmel,wake-up-self-adcx = <0x10>;
+		};
+
+		atmel,cfg_3 {
+			atmel,atchthr-sensitive = <0x06>;
+			atmel,build = <0xaa>;
+			atmel,family-id = <0xa4>;
+			atmel,key-codes = <0x66 0x8b 0x9e 0x74>;
+			atmel,key-num = <0x04>;
+			atmel,mult-intthr-not-sensitive = <0x11>;
+			atmel,mult-intthr-sensitive = <0x0c>;
+			atmel,mult-tchthr-not-sensitive = <0x00>;
+			atmel,mult-tchthr-sensitive = <0x00>;
+			atmel,mxt-cfg-name = "maxtouch_biel.fw";
+			atmel,panel-id = <0x35>;
+			atmel,rev-id = <0x02>;
+			atmel,self-chgtime-max = <0x00>;
+			atmel,self-chgtime-min = <0x00>;
+			atmel,selfintthr-stylus = <0x00>;
+			atmel,t71-tchthr-pos = <0x16>;
+			atmel,variant-id = <0x15>;
+			atmel,vendor-id = <0x0c>;
+			atmel,version = <0x21>;
+			atmel,wake-up-self-adcx = <0x10>;
+		};
+
+		atmel,cfg_4 {
+			atmel,atchthr-sensitive = <0x06>;
+			atmel,build = <0xaa>;
+			atmel,family-id = <0xa4>;
+			atmel,key-codes = <0x66 0x8b 0x9e 0x74>;
+			atmel,key-num = <0x04>;
+			atmel,mult-intthr-not-sensitive = <0x11>;
+			atmel,mult-intthr-sensitive = <0x0c>;
+			atmel,mult-tchthr-not-sensitive = <0x00>;
+			atmel,mult-tchthr-sensitive = <0x00>;
+			atmel,mxt-cfg-name = "maxtouch_biel.fw";
+			atmel,panel-id = <0x36>;
+			atmel,rev-id = <0x02>;
+			atmel,self-chgtime-max = <0x00>;
+			atmel,self-chgtime-min = <0x00>;
+			atmel,selfintthr-stylus = <0x00>;
+			atmel,t71-tchthr-pos = <0x16>;
+			atmel,variant-id = <0x15>;
+			atmel,vendor-id = <0x0c>;
+			atmel,version = <0x21>;
+			atmel,wake-up-self-adcx = <0x10>;
+		};				
 	};
 };
 
@@ -536,6 +431,9 @@
 	pinctrl-0 = <&mdss_default>;
 	pinctrl-1 = <&mdss_sleep>;
 
+	vdda-supply = <&pm8916_l2>;
+	vddio-supply = <&pm8916_l6>;
+	
 	panel@0 {
 		compatible = "sharp,rsp61322";
 		reg = <0>;
@@ -564,6 +462,51 @@
 			};
 		};
 	};
+};
+
+&dsi_phy0 {
+	vddio-supply = <&pm8916_l6>;
+	qcom,dsi-phy-regulator-ldo-mode;
+};
+
+&pronto {
+	status = "okay";
+	iris {
+		compatible = "qcom,wcn3680";
+	};
+};
+
+&sdhc_1 {
+	status = "okay";
+
+	vmmc-supply = <&pm8916_l8>;
+	vqmmc-supply = <&pm8916_l5>;
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc1_clk_on &sdc1_cmd_on &sdc1_data_on>;
+	pinctrl-1 = <&sdc1_clk_off &sdc1_cmd_off &sdc1_data_off>;
+};
+
+&sdhc_2 {
+	status = "disabled";
+
+	vmmc-supply = <&pm8916_l11>;
+	vqmmc-supply = <&pm8916_l12>;
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on>;
+	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off>;
+};
+
+&usb {
+	status = "okay";
+	extcon = <&usb_id>, <&usb_id>;
+};
+
+&usb_hs_phy {
+	extcon = <&usb_id>;
+	v1p8-supply = <&pm8916_l7>;
+	v3p3-supply = <&pm8916_l13>;
 };
 
 &pm8916_resin {
