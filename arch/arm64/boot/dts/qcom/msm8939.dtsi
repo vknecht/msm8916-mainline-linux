@@ -471,31 +471,33 @@
 					#clock-cells = <1>;
 				};
 
-				smd_rpm_regulators: pm8916-regulators {
-					compatible = "qcom,rpm-pm8916-regulators";
+				rpmpd: power-controller {
+					compatible = "qcom,msm8939-rpmpd";
+					#power-domain-cells = <1>;
+					operating-points-v2 = <&rpmpd_opp_table>;
 
-					pm8916_s1: s1 {};
-					pm8916_s3: s3 {};
-					pm8916_s4: s4 {};
+					rpmpd_opp_table: opp-table {
+						compatible = "operating-points-v2";
 
-					pm8916_l1: l1 {};
-					pm8916_l2: l2 {};
-					pm8916_l3: l3 {};
-					pm8916_l4: l4 {};
-					pm8916_l5: l5 {};
-					pm8916_l6: l6 {};
-					pm8916_l7: l7 {};
-					pm8916_l8: l8 {};
-					pm8916_l9: l9 {};
-					pm8916_l10: l10 {};
-					pm8916_l11: l11 {};
-					pm8916_l12: l12 {};
-					pm8916_l13: l13 {};
-					pm8916_l14: l14 {};
-					pm8916_l15: l15 {};
-					pm8916_l16: l16 {};
-					pm8916_l17: l17 {};
-					pm8916_l18: l18 {};
+						rpmpd_opp_retention: opp1 {
+							opp-level = <1>;
+						};
+						rpmpd_opp_svs_krait: opp2 {
+							opp-level = <2>;
+						};
+						rpmpd_opp_svs_soc: opp3 {
+							opp-level = <3>;
+						};
+						rpmpd_opp_nominal: opp4 {
+							opp-level = <4>;
+						};
+						rpmpd_opp_turbo: opp5 {
+							opp-level = <5>;
+						};
+						rpmpd_opp_super_turbo: opp6 {
+							opp-level = <6>;
+						};
+					};
 				};
 			};
 		};
@@ -1383,13 +1385,10 @@
 					      <&hexagon_smp2p_in 3 IRQ_TYPE_EDGE_RISING>;
 			interrupt-names = "wdog", "fatal", "ready",
 					  "handover", "stop-ack";
-/* msm8939 did not switch to powerdomain yet !
-			power-domains = <&rpmpd MSM8916_VDDCX>,
-					<&rpmpd MSM8916_VDDMX>;
+
+			power-domains = <&rpmpd MSM8939_VDDMDCX_AO>,
+					<&rpmpd MSM8939_VDDMX>;
 			power-domain-names = "cx", "mx";
-   so try with these supplies... */
-			cx-supply = <&pm8916_s1>;
-			mx-supply = <&pm8916_l3>;
 			pll-supply = <&pm8916_l7>;
 
 			clocks = <&gcc GCC_MSS_CFG_AHB_CLK>,
@@ -1900,12 +1899,8 @@
 					      <&wcnss_smp2p_in 2 IRQ_TYPE_EDGE_RISING>,
 					      <&wcnss_smp2p_in 3 IRQ_TYPE_EDGE_RISING>;
 			interrupt-names = "wdog", "fatal", "ready", "handover", "stop-ack";
-/* no power domains yet for msm8939
-			power-domains = <&rpmpd MSM8916_VDDCX>,
-					<&rpmpd MSM8916_VDDMX>;
-			power-domain-names = "cx", "mx";
-   so reuse these supplies from older version ... */
-			vddmx-supply = <&pm8916_l3>;
+
+			power-domains = <&rpmpd MSM8939_VDDMX_AO>;
 			vddpx-supply = <&pm8916_l7>;
 
 			qcom,state = <&wcnss_smp2p_out 0>;
