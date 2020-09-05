@@ -1331,7 +1331,7 @@
 			clocks = <&gcc GCC_SMMU_CFG_CLK>,
 				 <&gcc GCC_GFX_TCU_CLK>,
 				 <&gcc GCC_GFX_TBU_CLK>;
-			clock-names = "iface", "bus", "tlb";
+			clock-names = "iface", "bus", "tbu";
 			qcom,iommu-secure-id = <18>;
 
 			// gfx3d_user:
