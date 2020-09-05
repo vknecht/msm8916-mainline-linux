@@ -455,7 +455,7 @@
 
 		rpm {
 			interrupts = <GIC_SPI 168 IRQ_TYPE_EDGE_RISING>;
-			qcom,ipc = <&apcs0 8 0>;
+			qcom,ipc = <&apcs1 8 0>;
 			qcom,smd-edge = <15>;
 
 			rpm_requests: rpm-requests {
@@ -514,7 +514,7 @@
 
 		interrupts = <GIC_SPI 27 IRQ_TYPE_EDGE_RISING>;
 
-		qcom,ipc = <&apcs0 8 14>;
+		qcom,ipc = <&apcs1 8 14>;
 
 		qcom,local-pid = <0>;
 		qcom,remote-pid = <1>;
@@ -539,7 +539,7 @@
 
 		interrupts = <GIC_SPI 143 IRQ_TYPE_EDGE_RISING>;
 
-		qcom,ipc = <&apcs0 8 18>;
+		qcom,ipc = <&apcs1 8 18>;
 
 		qcom,local-pid = <0>;
 		qcom,remote-pid = <4>;
@@ -564,8 +564,8 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		qcom,ipc-1 = <&apcs0 8 13>;
-		qcom,ipc-3 = <&apcs0 8 19>;
+		qcom,ipc-1 = <&apcs1 8 13>;
+		qcom,ipc-3 = <&apcs1 8 19>;
 
 		apps_smsm: apps@0 {
 			reg = <0>;
@@ -1415,7 +1415,7 @@
 				interrupts = <GIC_SPI 25 IRQ_TYPE_EDGE_RISING>;
 
 				qcom,smd-edge = <0>;
-				qcom,ipc = <&apcs0 8 12>;
+				qcom,ipc = <&apcs1 8 12>;
 				qcom,remote-pid = <1>;
 
 				label = "hexagon";
@@ -1924,7 +1924,7 @@
 			smd-edge {
 				interrupts = <GIC_SPI 142 IRQ_TYPE_EDGE_RISING>;
 
-				qcom,ipc = <&apcs0 8 17>;
+				qcom,ipc = <&apcs1 8 17>;
 				qcom,smd-edge = <6>;
 				qcom,remote-pid = <4>;
 
