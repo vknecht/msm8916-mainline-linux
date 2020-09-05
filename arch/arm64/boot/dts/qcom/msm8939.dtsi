@@ -157,7 +157,7 @@
 			reg = <0x100>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			clocks = <&apcs>;
+			clocks = <&apcs1>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD0>;
@@ -170,7 +170,7 @@
 			reg = <0x101>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			clocks = <&apcs>;
+			clocks = <&apcs1>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD1>;
@@ -183,7 +183,7 @@
 			reg = <0x102>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			clocks = <&apcs>;
+			clocks = <&apcs1>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD2>;
@@ -196,7 +196,7 @@
 			reg = <0x103>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			clocks = <&apcs>;
+			clocks = <&apcs1>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD3>;
@@ -209,8 +209,9 @@
 			reg = <0x0>;
 			next-level-cache = <&L2_0>;
 			enable-method = "psci";
-			//clocks = <&apcs> //fixme
+			clocks = <&apcs0>;
 			operating-points-v2 = <&cpu_opp_table_little>;
+			#cooling-cells = <2>;
 		};
 
 		CPU5: cpu@1 {
@@ -219,8 +220,9 @@
 			reg = <0x1>;
 			next-level-cache = <&L2_0>;
 			enable-method = "psci";
-			//clocks = <&apcs> //fixme
+			clocks = <&apcs0>;
 			operating-points-v2 = <&cpu_opp_table_little>;
+			#cooling-cells = <2>;
 		};
 
 		CPU6: cpu@2 {
@@ -229,8 +231,9 @@
 			reg = <0x2>;
 			next-level-cache = <&L2_0>;
 			enable-method = "psci";
-			//clocks = <&apcs> //fixme
+			clocks = <&apcs0>;
 			operating-points-v2 = <&cpu_opp_table_little>;
+			#cooling-cells = <2>;
 		};
 
 		CPU7: cpu@3 {
@@ -239,8 +242,9 @@
 			reg = <0x3>;
 			next-level-cache = <&L2_0>;
 			enable-method = "psci";
-			//clocks = <&apcs> //fixmeme
+			clocks = <&apcs0>;
 			operating-points-v2 = <&cpu_opp_table_little>;
+			#cooling-cells = <2>;
 		};
 
 		L2_0: l2-cache { /* little */
@@ -295,18 +299,25 @@
 		opp-200000000 {
 			opp-hz = /bits/ 64 <200000000>;
 		};
+		opp-345600000 {
+			opp-hz = /bits/ 64 <345600000>;
+		};
 		opp-400000000 {
 			opp-hz = /bits/ 64 <400000000>;
+		};
+		opp-533330000 {
+			opp-hz = /bits/ 64 <533330000>;
 		};
 		opp-800000000 {
 			opp-hz = /bits/ 64 <800000000>;
 		};
-		opp-998400000 {
-			opp-hz = /bits/ 64 <998400000>;
+		opp-960000000 {
+			opp-hz = /bits/ 64 <960000000>;
 		};
 		opp-1113600000 {
 			opp-hz = /bits/ 64 <1113600000>;
 		};
+		/*
 		opp-1344000000 {
 			opp-hz = /bits/ 64 <1344000000>;
 		};
@@ -319,6 +330,7 @@
 		opp-1651200000 {
 		 	opp-hz = /bits/ 64 <1651200000>;
 		};
+		*/
 	};
 
 	cpu_opp_table_little: cpu-opp-table-little {
@@ -328,18 +340,23 @@
 		opp-200000000 {
 			opp-hz = /bits/ 64 <200000000>;
 		};
-		opp-400000000 {
-			opp-hz = /bits/ 64 <400000000>;
+		opp-249600000 {
+			opp-hz = /bits/ 64 <249600000>;
+		};
+		opp-499200000 {
+			opp-hz = /bits/ 64 <499200000>;
 		};
 		opp-800000000 {
 			opp-hz = /bits/ 64 <800000000>;
 		};
+		/*
 		opp-998400000 {
 			opp-hz = /bits/ 64 <998400000>;
 		};
 		opp-1113600000 {
 			opp-hz = /bits/ 64 <1113600000>;
 		};
+		*/
 	};
 
 	cci_opp_table: cci-opp-table {
@@ -442,7 +459,7 @@
 
 		rpm {
 			interrupts = <GIC_SPI 168 IRQ_TYPE_EDGE_RISING>;
-			qcom,ipc = <&apcs 8 0>;
+			qcom,ipc = <&apcs0 8 0>;
 			qcom,smd-edge = <15>;
 
 			rpm_requests: rpm-requests {
@@ -499,7 +516,7 @@
 
 		interrupts = <GIC_SPI 27 IRQ_TYPE_EDGE_RISING>;
 
-		qcom,ipc = <&apcs 8 14>;
+		qcom,ipc = <&apcs0 8 14>;
 
 		qcom,local-pid = <0>;
 		qcom,remote-pid = <1>;
@@ -524,7 +541,7 @@
 
 		interrupts = <GIC_SPI 143 IRQ_TYPE_EDGE_RISING>;
 
-		qcom,ipc = <&apcs 8 18>;
+		qcom,ipc = <&apcs0 8 18>;
 
 		qcom,local-pid = <0>;
 		qcom,remote-pid = <4>;
@@ -549,8 +566,8 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		qcom,ipc-1 = <&apcs 8 13>;
-		qcom,ipc-3 = <&apcs 8 19>;
+		qcom,ipc-1 = <&apcs0 8 13>;
+		qcom,ipc-3 = <&apcs0 8 19>;
 
 		apps_smsm: apps@0 {
 			reg = <0>;
@@ -1403,7 +1420,7 @@
 				interrupts = <GIC_SPI 25 IRQ_TYPE_EDGE_RISING>;
 
 				qcom,smd-edge = <0>;
-				qcom,ipc = <&apcs 8 12>;
+				qcom,ipc = <&apcs0 8 12>;
 				qcom,remote-pid = <1>;
 
 				label = "hexagon";
@@ -1914,7 +1931,7 @@
 			smd-edge {
 				interrupts = <GIC_SPI 142 IRQ_TYPE_EDGE_RISING>;
 
-				qcom,ipc = <&apcs 8 17>;
+				qcom,ipc = <&apcs0 8 17>;
 				qcom,smd-edge = <6>;
 				qcom,remote-pid = <4>;
 
@@ -1961,22 +1978,45 @@
 			compatible = "qcom,msm8939-a53pll-c0";
 			reg = <0xb116000 0x40>;
 			#clock-cells = <0>;
-			status = "disabled";
 		};
 
 		a53pll_cci: clock@b1d0000 {
 			compatible = "qcom,msm8939-a53pll-cci";
 			reg = <0xb1d0000 0x40>;
 			#clock-cells = <0>;
-			status = "disabled";
 		};
 
-		apcs: mailbox@b111000 {
-			compatible = "qcom,msm8939-apcs-kpss-global", "syscon";
+		apcs2: mailbox@b1d1000 {
+			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
+			reg = <0xb1d1000 0x1000>;
+			#mbox-cells = <1>;
+			clocks = <&a53pll_cci>, <&gcc GPLL0_VOTE>, <&xo_board>;
+			clock-names = "pll", "aux", "ref";
+			#clock-cells = <0>;
+			clock-output-names = "a53mux_cci";
+		};
+
+		apcs1: mailbox@b011000 {
+			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
+			reg = <0xb011000 0x1000>;
+			#mbox-cells = <1>;
+			clocks = <&a53pll_c1>, <&gcc GPLL0_VOTE>, <&xo_board>;
+			clock-names = "pll", "aux", "ref";
+			#clock-cells = <0>;
+			clock-output-names = "a53mux_c1";
+			/* Set a nominal frequency on a53mux_cci */
+			assigned-clocks = <&apcs2>;
+			assigned-clock-rates = <297600000>;
+		};
+
+		apcs0: mailbox@b111000 {
+			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
 			reg = <0xb111000 0x1000>;
 			#mbox-cells = <1>;
-			clocks = <&a53pll_c1>, <&a53pll_c0>, <&a53pll_cci>;
+			clocks = <&a53pll_c0>, <&gcc GPLL0_VOTE>, <&xo_board>;
+			clock-names = "pll", "aux", "ref";
 			#clock-cells = <0>;
+			clock-output-names = "a53mux_c0";
 		};
 
 		timer@b120000 {
