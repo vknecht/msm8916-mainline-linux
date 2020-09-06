@@ -1967,18 +1967,27 @@
 			compatible = "qcom,msm8939-a53pll-c1";
 			reg = <0xb016000 0x40>;
 			#clock-cells = <0>;
+			power-domains = <&rpmpd MSM8939_VDDCX_AO>;
+			power-domain-names = "dig";
+			dig-supply = <&pm8916_l7>;
 		};
 
 		a53pll_c0: clock@b116000 {
 			compatible = "qcom,msm8939-a53pll-c0";
 			reg = <0xb116000 0x40>;
 			#clock-cells = <0>;
+			power-domains = <&rpmpd MSM8939_VDDCX_AO>;
+			power-domain-names = "dig";
+			dig-supply = <&pm8916_l7>;
 		};
 
 		a53pll_cci: clock@b1d0000 {
 			compatible = "qcom,msm8939-a53pll-cci";
 			reg = <0xb1d0000 0x40>;
 			#clock-cells = <0>;
+			power-domains = <&rpmpd MSM8939_VDDCX_AO>;
+			power-domain-names = "dig";
+			dig-supply = <&pm8916_l7>;
 		};
 
 		apcs2: mailbox@b1d1000 {
