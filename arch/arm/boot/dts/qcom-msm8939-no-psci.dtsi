@@ -6,82 +6,66 @@
 			enable-method = "qcom,arm-cortex-acc";
 			qcom,acc = <&acc0>;
 			qcom,saw = <&saw0>;
-
-			/* TODO: power domain support */
 			cpu-idle-states = <&CPU_SLEEP_0>;
-			/delete-property/ power-domains;
-			/delete-property/ power-domain-names;
+			power-domains = <&cpr>;
+			power-domain-names = "cpr";
 		};
 		cpu@101 {
 			enable-method = "qcom,arm-cortex-acc";
 			qcom,acc = <&acc1>;
 			qcom,saw = <&saw1>;
-
-			/* TODO: power domain support */
 			cpu-idle-states = <&CPU_SLEEP_0>;
-			/delete-property/ power-domains;
-			/delete-property/ power-domain-names;
+			power-domains = <&cpr>;
+			power-domain-names = "cpr";
 		};
 		cpu@102 {
 			enable-method = "qcom,arm-cortex-acc";
 			qcom,acc = <&acc2>;
 			qcom,saw = <&saw2>;
-
-			/* TODO: power domain support */
 			cpu-idle-states = <&CPU_SLEEP_0>;
-			/delete-property/ power-domains;
-			/delete-property/ power-domain-names;
+			power-domains = <&cpr>;
+			power-domain-names = "cpr";
 		};
 		cpu@103 {
 			enable-method = "qcom,arm-cortex-acc";
 			qcom,acc = <&acc3>;
 			qcom,saw = <&saw3>;
-
-			/* TODO: power domain support */
 			cpu-idle-states = <&CPU_SLEEP_0>;
-			/delete-property/ power-domains;
-			/delete-property/ power-domain-names;
+			power-domains = <&cpr>;
+			power-domain-names = "cpr";
 		};
 
 		cpu@0 {
 			enable-method = "qcom,arm-cortex-acc";
 			qcom,acc = <&acc4>;
 			qcom,saw = <&saw4>;
-
-			/* TODO: power domain support */
 			//cpu-idle-states = <&CPU_SLEEP_0>;
-			/delete-property/ power-domains;
-			/delete-property/ power-domain-names;
+			power-domains = <&cpr>;
+			power-domain-names = "cpr";
 		};
 		cpu@1 {
 			enable-method = "qcom,arm-cortex-acc";
 			qcom,acc = <&acc5>;
 			qcom,saw = <&saw5>;
-
-			/* TODO: power domain support */
 			//cpu-idle-states = <&CPU_SLEEP_0>;
-			/delete-property/ power-domains;
-			/delete-property/ power-domain-names;
+			power-domains = <&cpr>;
+			power-domain-names = "cpr";
 		};
 		cpu@2 {
 			enable-method = "qcom,arm-cortex-acc";
 			qcom,acc = <&acc6>;
 			qcom,saw = <&saw6>;
-
-			/* TODO: power domain support */
 			//cpu-idle-states = <&CPU_SLEEP_0>;
-			/delete-property/ power-domains;
-			/delete-property/ power-domain-names;
+			power-domains = <&cpr>;
+			power-domain-names = "cpr";
 		};
 		cpu@3 {
 			enable-method = "qcom,arm-cortex-acc";
 			qcom,acc = <&acc7>;
 			qcom,saw = <&saw7>;
-
-			/* TODO: power domain support */
 			//cpu-idle-states = <&CPU_SLEEP_0>;
-			/delete-property/ power-domains;
-			/delete-property/ power-domain-names;
+			power-domains = <&cpr>;
+			power-domain-names = "cpr";
 		};
 
 		l2-cache {

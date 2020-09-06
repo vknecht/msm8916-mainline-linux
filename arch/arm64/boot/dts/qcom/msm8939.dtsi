@@ -250,11 +250,13 @@
 		L2_0: l2-cache { /* little */
 			compatible = "cache";
 			cache-level = <2>;
+			power-domain = <&l2c_pd_0>;
 		};
 
 		L2_1: l2-cache-1 { /* BIG */
 			compatible = "cache";
 			cache-level = <2>;
+			power-domain = <&l2c_pd_1>;
 		};
 
 
@@ -293,70 +295,81 @@
 	};
 
 	cpu_opp_table_big: cpu-opp-table-big {
-		compatible = "operating-points-v2";
+		compatible = "operating-points-v2-qcom-cpu";
 		opp-shared;
 
 		opp-200000000 {
 			opp-hz = /bits/ 64 <200000000>;
-		};
-		opp-345600000 {
-			opp-hz = /bits/ 64 <345600000>;
+			required-opps = <&cpr_opp1>;
 		};
 		opp-400000000 {
 			opp-hz = /bits/ 64 <400000000>;
+			required-opps = <&cpr_opp1>;
 		};
 		opp-533330000 {
 			opp-hz = /bits/ 64 <533330000>;
+			required-opps = <&cpr_opp2>;
 		};
 		opp-800000000 {
 			opp-hz = /bits/ 64 <800000000>;
-		};
-		opp-960000000 {
-			opp-hz = /bits/ 64 <960000000>;
+			required-opps = <&cpr_opp2>;
 		};
 		opp-1113600000 {
 			opp-hz = /bits/ 64 <1113600000>;
-		};
-		/*
-		opp-1344000000 {
-			opp-hz = /bits/ 64 <1344000000>;
-		};
-		opp-1459200000 {
-			opp-hz = /bits/ 64 <1459200000>;
+			required-opps = <&cpr_opp2>;
 		};
 		opp-1497600000 {
 			opp-hz = /bits/ 64 <1497600000>;
+			required-opps = <&cpr_opp3>;
 		};
+		/*
 		opp-1651200000 {
 		 	opp-hz = /bits/ 64 <1651200000>;
+			required-opps = <&cpr_opp3>;
 		};
 		*/
 	};
 
 	cpu_opp_table_little: cpu-opp-table-little {
-		compatible = "operating-points-v2";
+		compatible = "operating-points-v2-qcom-cpu";
 		opp-shared;
 
-		opp-200000000 {
-			opp-hz = /bits/ 64 <200000000>;
-		};
 		opp-249600000 {
 			opp-hz = /bits/ 64 <249600000>;
+			required-opps = <&cpr_opp1>;
 		};
 		opp-499200000 {
 			opp-hz = /bits/ 64 <499200000>;
+			required-opps = <&cpr_opp2>;
 		};
 		opp-800000000 {
 			opp-hz = /bits/ 64 <800000000>;
+			required-opps = <&cpr_opp2>;
 		};
-		/*
 		opp-998400000 {
 			opp-hz = /bits/ 64 <998400000>;
+			required-opps = <&cpr_opp2>;
 		};
 		opp-1113600000 {
 			opp-hz = /bits/ 64 <1113600000>;
+			required-opps = <&cpr_opp3>;
 		};
-		*/
+	};
+
+	cpr_opp_table: cpr-opp-table {
+		compatible = "operating-points-v2-qcom-level";
+		cpr_opp1: opp1 {
+			opp-level = <1>;
+			qcom,opp-fuse-level = <1>;
+		};
+		cpr_opp2: opp2 {
+			opp-level = <2>;
+			qcom,opp-fuse-level = <2>;
+		};
+		cpr_opp3: opp3 {
+			opp-level = <3>;
+			qcom,opp-fuse-level = <3>;
+		};
 	};
 
 	cci_opp_table: cci-opp-table {
@@ -600,6 +613,97 @@
 		ranges = <0 0 0 0xffffffff>;
 		compatible = "simple-bus";
 
+		l2c_pd_0: power-domain@b111000 {
+			compatible = "qcom,l2c-pd";
+			reg = <0xb111000 0x1000>;
+		};
+
+		l2c_pd_1: power-domain@b011000 {
+			compatible = "qcom,l2c-pd";
+			reg = <0xb011000 0x1000>;
+		};
+
+		qfprom_cpr: qfprom_cpr@58000 {
+			compatible = "qcom,qfprom";
+			reg = <0x00058000 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			cpr_efuse_init_voltage1: ivoltage1@dc {
+				reg = <0xdc 0x4>;
+				bits = <4 6>;
+			};
+			cpr_efuse_init_voltage2: ivoltage2@da {
+				reg = <0xda 0x4>;
+				bits = <2 6>;
+			};
+			cpr_efuse_init_voltage3: ivoltage3@d8 {
+				reg = <0xd8 0x4>;
+				bits = <0 6>;
+			};
+			cpr_efuse_quot1: quot1@dc {
+				reg = <0xdc 0x4>;
+				bits = <10 12>;
+			};
+			cpr_efuse_quot2: quot2@da {
+				reg = <0xda 0x4>;
+				bits = <2 12>;
+			};
+			cpr_efuse_quot3: quot3@d8 {
+				reg = <0xd8 0x4>;
+				bits = <2 12>;
+			};
+			cpr_efuse_ring1: ring1@de {
+				reg = <0xde 0x4>;
+				bits = <6 3>;
+			};
+			cpr_efuse_ring2: ring2@de {
+				reg = <0xde 0x4>;
+				bits = <6 3>;
+			};
+			cpr_efuse_ring3: ring3@de {
+				reg = <0xde 0x4>;
+				bits = <6 3>;
+			};
+			cpr_efuse_revision: revision@40 {
+				/* This info is missing. Not used neither. */
+				reg = <0x40 0x4>;
+				bits = <3 2>;
+			};
+		};
+
+		cpr: power-controller@b018000 {
+			compatible = "qcom,msm8939-cpr", "qcom,cpr";
+			reg = <0x0b018000 0x1000>;
+			interrupts = <0 15 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&xo_board>;
+			clock-names = "ref";
+			power-domains = <&rpmpd MSM8939_VDDMX_AO>;
+			#power-domain-cells = <0>;
+			operating-points-v2 = <&cpr_opp_table>;
+			acc-syscon = <&tcsr>;
+
+			nvmem-cells = <&cpr_efuse_init_voltage1>,
+				<&cpr_efuse_init_voltage2>,
+				<&cpr_efuse_init_voltage3>,
+				<&cpr_efuse_quot1>,
+				<&cpr_efuse_quot2>,
+				<&cpr_efuse_quot3>,
+				<&cpr_efuse_ring1>,
+				<&cpr_efuse_ring2>,
+				<&cpr_efuse_ring3>,
+				<&cpr_efuse_revision>;
+			nvmem-cell-names = "cpr_init_voltage1",
+				"cpr_init_voltage2",
+				"cpr_init_voltage3",
+				"cpr_quotient1",
+				"cpr_quotient2",
+				"cpr_quotient3",
+				"cpr_ring_osc1",
+				"cpr_ring_osc2",
+				"cpr_ring_osc3",
+				"cpr_fuse_revision";
+		};
+
 		rng@22000 {
 			compatible = "qcom,prng";
 			reg = <0x00022000 0x200>;
@@ -612,35 +716,24 @@
 			reg = <0x004ab000 0x4>;
 		};
 
-		qfprom: qfprom@5c000 {
-			compatible = "qcom,qfprom";
-			reg = <0x0005c000 0x1000>;
-			#address-cells = <1>;
-			#size-cells = <1>;
-			tsens_caldata: caldata@d0 {
-				reg = <0xd0 0x8>;
-			};
-			tsens_calsel: calsel@ec {
-				reg = <0xec 0x4>;
-			};
-		};
-
 		rpm_msg_ram: memory@60000 {
 			compatible = "qcom,rpm-msg-ram";
 			reg = <0x00060000 0x8000>;
 		};
 
+#if 0
 		tsens: thermal-sensor@4a9000 {
 			compatible = "qcom,msm8939-tsens";
 			reg = <0x004a9000 0x1000>, /* TM */
 			      <0x004a8000 0x1000>; /* SROT */
 			nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
 			nvmem-cell-names = "calib", "calib_sel";
-			#qcom,sensors = <10>;
+			#qcom,sensors = <5>;
 			interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
 			interrupt-names = "uplow";
 			#thermal-sensor-cells = <1>;
 		};
+#endif
 
 		tpiu: tpiu@820000 {
 			compatible = "arm,coresight-tpiu", "arm,primecell";
