@@ -6,6 +6,7 @@
 #include <dt-bindings/arm/coresight-cti-dt.h>
 #include <dt-bindings/clock/qcom,gcc-msm8939.h>
 #include <dt-bindings/clock/qcom,rpmcc.h>
+#include <dt-bindings/interconnect/qcom,msm8939.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/power/qcom-rpmpd.h>
 #include <dt-bindings/reset/qcom,gcc-msm8939.h>
@@ -721,6 +722,16 @@
 			reg = <0x00060000 0x8000>;
 		};
 
+		bimc: interconnect@400000 {
+			compatible = "qcom,msm8939-bimc";
+			#interconnect-cells = <1>;
+			reg = <0x400000 0x62000>;
+			clock-names = "bus", "bus_a";
+			clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
+				 <&rpmcc RPM_SMD_BIMC_A_CLK>;
+			status = "okay";
+		};
+
 #if 0
 		tsens: thermal-sensor@4a9000 {
 			compatible = "qcom,msm8939-tsens";
@@ -735,6 +746,35 @@
 		};
 #endif
 
+		pcnoc: interconnect@500000 {
+			compatible = "qcom,msm8939-pcnoc";
+			#interconnect-cells = <1>;
+			reg = <0x500000 0x11000>;
+			clock-names = "bus", "bus_a";
+			clocks = <&rpmcc RPM_SMD_PCNOC_CLK>,
+				 <&rpmcc RPM_SMD_PCNOC_A_CLK>;
+			status = "okay";
+		};
+
+		snoc: interconnect@580000 {
+			compatible = "qcom,msm8939-snoc";
+			#interconnect-cells = <1>;
+			reg = <0x580000 0x14000>;
+			clock-names = "bus", "bus_a";
+			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
+				 <&rpmcc RPM_SMD_SNOC_A_CLK>;
+			status = "okay";
+		};
+
+		snoc_mm: interconnect_mm@580000 {
+			compatible = "qcom,msm8939-snoc-mm";
+			#interconnect-cells = <1>;
+			reg = <0x580000 0x14000>;
+			clock-names = "bus", "bus_a";
+			clocks = <&rpmcc RPM_SMD_SYSMMNOC_CLK>,
+				 <&rpmcc RPM_SMD_SYSMMNOC_A_CLK>;
+			status = "okay";
+		};
 		tpiu: tpiu@820000 {
 			compatible = "arm,coresight-tpiu", "arm,primecell";
 			reg = <0x00820000 0x1000>;
@@ -1127,6 +1167,10 @@
 					      "tbu_rt";
 
 				iommus = <&apps_iommu 4>;
+
+				interconnects = <&snoc_mm MASTER_MDP_PORT0 &bimc SLAVE_EBI_CH0>,
+						<&snoc_mm MASTER_MDP_PORT1 &bimc SLAVE_EBI_CH0>;
+				interconnect-names = "mdp0-mem", "mdp1-mem";
 
 				ports {
 					#address-cells = <1>;
