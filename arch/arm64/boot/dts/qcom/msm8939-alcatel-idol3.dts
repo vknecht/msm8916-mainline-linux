@@ -197,6 +197,8 @@
 		onnn,vsel-gpio = <&msmgpio 111 GPIO_ACTIVE_LOW>;
 		onnn,discharge-enable;
 		onnn,restore-reg;
+		onnn,set-en-always;
+		onnn,register-corruption-workaround;
 	};
 
 	speaker_codec: audio-codec@34 {
@@ -503,6 +505,10 @@
 			regulator-max-microvolt = <2700000>;
 		};
 	};
+};
+
+&cpr {
+	vdd-apc-supply = <&ncp6335d>;
 };
 
 &dsi0 {
