@@ -157,7 +157,7 @@
 			reg = <0x100>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			clocks = <&apcs1>;
+			clocks = <&apcs1_mbox>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD0>;
@@ -170,7 +170,7 @@
 			reg = <0x101>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			clocks = <&apcs1>;
+			clocks = <&apcs1_mbox>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD1>;
@@ -183,7 +183,7 @@
 			reg = <0x102>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			clocks = <&apcs1>;
+			clocks = <&apcs1_mbox>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD2>;
@@ -196,7 +196,7 @@
 			reg = <0x103>;
 			next-level-cache = <&L2_1>;
 			enable-method = "psci";
-			clocks = <&apcs1>;
+			clocks = <&apcs1_mbox>;
 			operating-points-v2 = <&cpu_opp_table_big>;
 			#cooling-cells = <2>;
 			power-domains = <&CPU_PD3>;
@@ -516,7 +516,7 @@
 
 		interrupts = <GIC_SPI 27 IRQ_TYPE_EDGE_RISING>;
 
-		mboxes = <&apcs1 14>;
+		mboxes = <&apcs1_mbox 14>;
 
 		qcom,local-pid = <0>;
 		qcom,remote-pid = <1>;
@@ -541,7 +541,7 @@
 
 		interrupts = <GIC_SPI 143 IRQ_TYPE_EDGE_RISING>;
 
-		mboxes = <&apcs1 18>;
+		mboxes = <&apcs1_mbox 18>;
 
 		qcom,local-pid = <0>;
 		qcom,remote-pid = <4>;
@@ -1420,7 +1420,7 @@
 				interrupts = <GIC_SPI 25 IRQ_TYPE_EDGE_RISING>;
 
 				qcom,smd-edge = <0>;
-				mboxes = <&apcs1 12>;
+				mboxes = <&apcs1_mbox 12>;
 				qcom,remote-pid = <1>;
 
 				label = "hexagon";
@@ -1996,8 +1996,8 @@
 			clock-output-names = "a53mux_cci";
 		};
 
-		apcs1: mailbox@b011000 {
-			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
+		apcs1_mbox: mailbox@b011000 {
+			compatible = "qcom,msm8916-apcs-kpss-global";
 			reg = <0xb011000 0x1000>;
 			#mbox-cells = <1>;
 			clocks = <&a53pll_c1>, <&gcc GPLL0_VOTE>, <&xo_board>;
@@ -2007,6 +2007,11 @@
 			/* Set a nominal frequency on a53mux_cci */
 			assigned-clocks = <&apcs2>;
 			assigned-clock-rates = <297600000>;
+		};
+
+		apcs1: syscon@b011000 {
+			compatible = "syscon";
+			reg = <0xb011000 0x1000>;
 		};
 
 		apcs0: mailbox@b111000 {
