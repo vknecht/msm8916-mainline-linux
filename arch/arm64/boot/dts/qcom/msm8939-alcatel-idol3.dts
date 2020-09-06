@@ -186,7 +186,7 @@
 	};
 
 	ncp6335d: ncp6335d-regulator@1c {
-		compatible = "onnn,ncp6335d";
+		compatible = "onnn,ncp6335d-regulator";
 		reg = <0x1c>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&ext_buck_vsel>;
@@ -202,6 +202,8 @@
 		onnn,vsel-gpio = <&msmgpio 111 GPIO_ACTIVE_LOW>;
 		onnn,discharge-enable;
 		onnn,restore-reg;
+		onnn,set-en-always;
+		onnn,register-corruption-workaround;
 	};
 
 	speaker_codec: audio-codec@34 {
@@ -525,6 +527,10 @@
 			regulator-max-microvolt = <2700000>;
 		};
 	};
+};
+
+&cpr {
+	vdd-apc-supply = <&ncp6335d>;
 };
 
 &dsi0 {
