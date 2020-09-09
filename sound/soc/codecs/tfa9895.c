@@ -165,6 +165,20 @@ static const struct reg_sequence tfa9897_reg_switch[] = {
 	{ TFA98XX_SYS_CTRL, 0x0608 },
 };
 
+static int tfa9897_reset(struct tfa9897_data *tfa9897) {
+	int ret = 0;
+
+	if (tfa9897->reset_gpiod) {
+		gpiod_set_value_cansleep(tfa9897->reset_gpiod, 1);
+		msleep(5);
+		gpiod_set_value_cansleep(tfa9897->reset_gpiod, 0);
+	} else {
+		/* TODO? Do reset with regmap/register writes ? */
+	}
+
+	return ret;
+}
+
 static int tfa9897_init(struct i2c_client *i2c, struct regmap *regmap) {
 	struct device *dev = &i2c->dev;
 	struct tfa9897_data *tfa9897;
@@ -185,15 +199,18 @@ static int tfa9897_init(struct i2c_client *i2c, struct regmap *regmap) {
 	if (IS_ERR(tfa9897->switch_gpiod))
 		return PTR_ERR(tfa9897->switch_gpiod);
 
-	/* Fetch the regulators */
-	tfa9897->vdd = devm_regulator_get(dev, "vdd");
-	if (IS_ERR(tfa9897->vdd))
-		return PTR_ERR(tfa9897->vdd);
+	tfa9897->vdd = devm_regulator_get_optional(dev, "vdd");
+	if (IS_ERR(tfa9897->vdd)) {
+		if (PTR_ERR(tfa9897->vdd) == -EPROBE_DEFER)
+			return -EPROBE_DEFER;
 
-	ret = regulator_enable(tfa9897->vdd);
-	if (ret) {
-		dev_warn(dev, "Failed to enable specified Vdd supply\n");
-		return ret;
+		tfa9897->vdd = NULL;
+	} else {
+		ret = regulator_enable(tfa9897->vdd);
+		if (ret) {
+			dev_err(dev, "Failed to enable vdd regulator\n");
+			return ret;
+		}
 	}
 
 	ret = regmap_write(regmap, TFA98XX_CURRENTSENSE3, 0x0300);
@@ -208,9 +225,11 @@ static int tfa9897_init(struct i2c_client *i2c, struct regmap *regmap) {
 		return ret;
 	}
 
-	gpiod_set_value_cansleep(tfa9897->reset_gpiod, 1);
-	msleep(5);
-	gpiod_set_value_cansleep(tfa9897->reset_gpiod, 0);
+	ret = tfa9897_reset(tfa9897);
+	if (ret) {
+		dev_err(dev, "tfa9897: Failed to reset!\n");
+		return ret;
+	}
 
 	/* From downstream sound/soc/msm/tfa9897.c#L873-L876 */
 	ret = regmap_multi_reg_write(regmap, tfa9897_reg_switch,
