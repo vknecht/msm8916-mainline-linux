@@ -123,7 +123,6 @@
 		reg = <0x0c>;
 		vdd-supply = <&pm8916_l17>;
 		vid-supply = <&pm8916_l6>;
-		reset-gpios = <&msmgpio 100 GPIO_ACTIVE_HIGH>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&mag_reset_default>;
 		mount-matrix = "0", "1", "0",
