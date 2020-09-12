@@ -131,6 +131,11 @@
 			       "0", "0", "1";
 	};
 
+	accelerometer@e {
+		compatible = "kionix,kxtj21009";
+		reg = <0x0e>;
+	};
+
 	proximity@39 {
 		compatible = "amstaos,tsl2772";
 		reg = <0x39>;
