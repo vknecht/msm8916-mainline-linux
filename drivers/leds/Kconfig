@@ -937,6 +937,13 @@ config LEDS_ACER_A500
 	  This option enables support for the Power Button LED of
 	  Acer Iconia Tab A500.
 
+config LEDS_SN31XX
+	tristate "LED support for the SN31XX"
+	depends on LEDS_CLASS
+	depends on I2C && OF
+	help
+	  This option enables support for the SN31XX LED driver.
+
 source "drivers/leds/blink/Kconfig"
 
 comment "Flash and Torch LED drivers"
