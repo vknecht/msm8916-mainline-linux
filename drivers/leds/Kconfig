@@ -916,6 +916,13 @@ config LEDS_SGM3140
 	  This option enables support for the SGM3140 500mA Buck/Boost Charge
 	  Pump LED Driver.
 
+config LEDS_SN31XX
+	tristate "LED support for the SN31XX"
+	depends on LEDS_CLASS
+	depends on I2C && OF
+	help
+	  This option enables support for the SN31XX LED driver.
+
 comment "LED Triggers"
 source "drivers/leds/trigger/Kconfig"
 
