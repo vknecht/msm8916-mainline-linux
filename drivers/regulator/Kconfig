@@ -729,13 +729,6 @@ config REGULATOR_MT6397
 	  This driver supports the control of different power rails of device
 	  through regulator interface.
 
-config REGULATOR_NCP6335D
-	tristate "Onsemi NCP6335D Regulator"
-	depends on I2C && OF
-	select REGMAP_I2C
-	help
-	  Say y here to support the NCP6335D regulator.
-
 config REGULATOR_PALMAS
 	tristate "TI Palmas PMIC Regulators"
 	depends on MFD_PALMAS
