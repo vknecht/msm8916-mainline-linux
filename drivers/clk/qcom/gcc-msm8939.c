@@ -13,10 +13,8 @@
 #include <linux/clk-provider.h>
 #include <linux/regmap.h>
 #include <linux/reset-controller.h>
-#include <linux/mutex.h>
 
 #include <dt-bindings/clock/qcom,gcc-msm8939.h>
-#include <dt-bindings/power/qcom-rpmpd.h>
 #include <dt-bindings/reset/qcom,gcc-msm8939.h>
 
 #include "common.h"
@@ -26,20 +24,6 @@
 #include "clk-branch.h"
 #include "reset.h"
 #include "gdsc.h"
-
-static struct device	*genpd_dev;
-static struct mutex	genpd_lock;
-static struct list_head	genpd_head;
-
-#define POWER_PDOPP(table)					\
-	.power_magic = CLK_POWER_MAGIC,				\
-	.power = &(struct clk_power_data) {			\
-		.genpd_head = &genpd_head,			\
-		.genpd_lock = &genpd_lock,			\
-		.genpdopp_table = table,			\
-		.genpdopp_num = ARRAY_SIZE(table),		\
-		.genpd_dev = &genpd_dev,			\
-	}
 
 enum {
 	P_XO,
@@ -678,11 +662,6 @@ static const struct freq_tbl ftbl_gcc_camss_ahb_clk[] = {
 	{ }
 };
 
-static const struct genpdopp_table camss_ahb_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 40000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 80000000},
-};
-
 static struct clk_rcg2 camss_ahb_clk_src = {
 	.cmd_rcgr = 0x5a000,
 	.mnd_width = 8,
@@ -694,7 +673,6 @@ static struct clk_rcg2 camss_ahb_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(camss_ahb_genpdopp),
 	},
 };
 
@@ -719,11 +697,6 @@ static struct clk_rcg2 apss_ahb_clk_src = {
 	},
 };
 
-static const struct genpdopp_table camss_csi_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 100000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 200000000},
-};
-
 static const struct freq_tbl ftbl_gcc_camss_csi0_1_clk[] = {
 	F(100000000, P_GPLL0, 8, 0,	0),
 	F(200000000, P_GPLL0, 4, 0,	0),
@@ -740,7 +713,6 @@ static struct clk_rcg2 csi0_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(camss_csi_genpdopp),
 	},
 };
 
@@ -754,7 +726,6 @@ static struct clk_rcg2 csi1_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(camss_csi_genpdopp),
 	},
 };
 
@@ -774,13 +745,6 @@ static const struct freq_tbl ftbl_gcc_oxili_gfx3d_clk[] = {
 	{ }
 };
 
-static const struct genpdopp_table gfx3d_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 220000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 400000000},
-	{RPM_REGULATOR_CORNER_TURBO, 465000000},
-	{RPM_REGULATOR_CORNER_SUPER_TURBO, 550000000},
-};
-
 static struct clk_rcg2 gfx3d_clk_src = {
 	.cmd_rcgr = 0x59000,
 	.hid_width = 5,
@@ -791,7 +755,6 @@ static struct clk_rcg2 gfx3d_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll2a_gpll3_gpll6a_parent_data,
 		.num_parents = 5,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(gfx3d_genpdopp),
 	},
 };
 
@@ -811,13 +774,6 @@ static const struct freq_tbl ftbl_gcc_camss_vfe0_clk[] = {
 	{ }
 };
 
-static const struct genpdopp_table vfe_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 200000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 400000000},
-	{RPM_REGULATOR_CORNER_TURBO, 480000000},
-	{RPM_REGULATOR_CORNER_SUPER_TURBO, 600000000},
-};
-
 static struct clk_rcg2 vfe0_clk_src = {
 	.cmd_rcgr = 0x58000,
 	.hid_width = 5,
@@ -828,12 +784,7 @@ static struct clk_rcg2 vfe0_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll2_gpll4_parent_data,
 		.num_parents = 4,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(vfe_genpdopp),
 	},
-};
-
-static const struct genpdopp_table i2c_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 50000000},
 };
 
 static const struct freq_tbl ftbl_gcc_blsp1_qup1_6_i2c_apps_clk[] = {
@@ -852,13 +803,7 @@ static struct clk_rcg2 blsp1_qup1_i2c_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(i2c_genpdopp),
 	},
-};
-
-static const struct genpdopp_table blsp1_qup_spi_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 25000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 50000000},
 };
 
 static const struct freq_tbl ftbl_gcc_blsp1_qup1_6_spi_apps_clk[] = {
@@ -883,7 +828,6 @@ static struct clk_rcg2 blsp1_qup1_spi_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(blsp1_qup_spi_genpdopp),
 	},
 };
 
@@ -897,7 +841,6 @@ static struct clk_rcg2 blsp1_qup2_i2c_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(i2c_genpdopp),
 	},
 };
 
@@ -912,7 +855,6 @@ static struct clk_rcg2 blsp1_qup2_spi_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(blsp1_qup_spi_genpdopp),
 	},
 };
 
@@ -926,7 +868,6 @@ static struct clk_rcg2 blsp1_qup3_i2c_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(i2c_genpdopp),
 	},
 };
 
@@ -941,7 +882,6 @@ static struct clk_rcg2 blsp1_qup3_spi_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(blsp1_qup_spi_genpdopp),
 	},
 };
 
@@ -955,7 +895,6 @@ static struct clk_rcg2 blsp1_qup4_i2c_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(i2c_genpdopp),
 	},
 };
 
@@ -970,7 +909,6 @@ static struct clk_rcg2 blsp1_qup4_spi_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(blsp1_qup_spi_genpdopp),
 	},
 };
 
@@ -984,7 +922,6 @@ static struct clk_rcg2 blsp1_qup5_i2c_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(i2c_genpdopp),
 	},
 };
 
@@ -999,7 +936,6 @@ static struct clk_rcg2 blsp1_qup5_spi_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(blsp1_qup_spi_genpdopp),
 	},
 };
 
@@ -1013,7 +949,6 @@ static struct clk_rcg2 blsp1_qup6_i2c_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(i2c_genpdopp),
 	},
 };
 
@@ -1028,7 +963,6 @@ static struct clk_rcg2 blsp1_qup6_spi_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(blsp1_qup_spi_genpdopp),
 	},
 };
 
@@ -1051,11 +985,6 @@ static const struct freq_tbl ftbl_gcc_blsp1_uart1_6_apps_clk[] = {
 	{ }
 };
 
-static const struct genpdopp_table blsp1_uart_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 32000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 64000000},
-};
-
 static struct clk_rcg2 blsp1_uart1_apps_clk_src = {
 	.cmd_rcgr = 0x02044,
 	.mnd_width = 16,
@@ -1067,7 +996,6 @@ static struct clk_rcg2 blsp1_uart1_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(blsp1_uart_genpdopp),
 	},
 };
 
@@ -1082,18 +1010,12 @@ static struct clk_rcg2 blsp1_uart2_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(blsp1_uart_genpdopp),
 	},
 };
 
 static const struct freq_tbl ftbl_gcc_camss_cci_clk[] = {
 	F(19200000,	P_XO, 1, 0,	0),
 	{ }
-};
-
-static const struct genpdopp_table cci_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 19200000},
-	{RPM_REGULATOR_CORNER_NORMAL, 37500000},
 };
 
 static struct clk_rcg2 cci_clk_src = {
@@ -1107,13 +1029,7 @@ static struct clk_rcg2 cci_clk_src = {
 		.parent_data = gcc_xo_gpll0a_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(cci_genpdopp),
 	},
-};
-
-static const struct genpdopp_table camss_gp_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 100000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 200000000},
 };
 
 static const struct freq_tbl ftbl_gcc_camss_gp0_1_clk[] = {
@@ -1133,7 +1049,6 @@ static struct clk_rcg2 camss_gp0_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll1a_sleep_parent_data,
 		.num_parents = 4,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(camss_gp_genpdopp),
 	},
 };
 
@@ -1148,7 +1063,6 @@ static struct clk_rcg2 camss_gp1_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll1a_sleep_parent_data,
 		.num_parents = 4,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(camss_gp_genpdopp),
 	},
 };
 
@@ -1157,12 +1071,6 @@ static const struct freq_tbl ftbl_gcc_camss_jpeg0_clk[] = {
 	F(266670000, P_GPLL0, 3, 0,	0),
 	F(320000000, P_GPLL0, 2.5, 0, 0),
 	{ }
-};
-
-static const struct genpdopp_table jpeg_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 133330000},
-	{RPM_REGULATOR_CORNER_NORMAL, 266670000},
-	{RPM_REGULATOR_CORNER_SUPER_TURBO, 320000000},
 };
 
 static struct clk_rcg2 jpeg0_clk_src = {
@@ -1175,13 +1083,7 @@ static struct clk_rcg2 jpeg0_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(jpeg_genpdopp),
 	},
-};
-
-static const struct genpdopp_table mclk0_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 24000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 66670000},
 };
 
 static const struct freq_tbl ftbl_gcc_camss_mclk0_1_clk[] = {
@@ -1201,12 +1103,7 @@ static struct clk_rcg2 mclk0_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll1a_gpll6_sleep_parent_data,
 		.num_parents = 5,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(mclk0_genpdopp),
 	},
-};
-
-static const struct genpdopp_table mclk12_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 66670000},
 };
 
 static struct clk_rcg2 mclk1_clk_src = {
@@ -1220,7 +1117,6 @@ static struct clk_rcg2 mclk1_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll1a_gpll6_sleep_parent_data,
 		.num_parents = 5,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(mclk12_genpdopp),
 	},
 };
 
@@ -1228,11 +1124,6 @@ static const struct freq_tbl ftbl_gcc_camss_csi0_1phytimer_clk[] = {
 	F(100000000, P_GPLL0, 8, 0,	0),
 	F(200000000, P_GPLL0, 4, 0,	0),
 	{ }
-};
-
-static const struct genpdopp_table csi_phytimer_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 100000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 200000000},
 };
 
 static struct clk_rcg2 csi0phytimer_clk_src = {
@@ -1245,7 +1136,6 @@ static struct clk_rcg2 csi0phytimer_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll1a_parent_data,
 		.num_parents = 3,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(csi_phytimer_genpdopp),
 	},
 };
 
@@ -1259,7 +1149,6 @@ static struct clk_rcg2 csi1phytimer_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll1a_parent_data,
 		.num_parents = 3,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(csi_phytimer_genpdopp),
 	},
 };
 
@@ -1268,12 +1157,6 @@ static const struct freq_tbl ftbl_gcc_camss_cpp_clk[] = {
 	F(320000000, P_GPLL0, 2.5, 0, 0),
 	F(465000000, P_GPLL2, 2, 0, 0),
 	{ }
-};
-
-static const struct genpdopp_table cpp_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 160000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 320000000},
-	{RPM_REGULATOR_CORNER_SUPER_TURBO, 465000000},
 };
 
 static struct clk_rcg2 cpp_clk_src = {
@@ -1286,7 +1169,6 @@ static struct clk_rcg2 cpp_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll2_parent_data,
 		.num_parents = 3,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(cpp_genpdopp),
 	},
 };
 
@@ -1299,11 +1181,6 @@ static const struct freq_tbl ftbl_gcc_crypto_clk[] = {
 };
 
 /* This is not in the documentation but is in the downstream driver */
-static const struct genpdopp_table crypto_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 80000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 160000000},
-};
-
 static struct clk_rcg2 crypto_clk_src = {
 	.cmd_rcgr = 0x16004,
 	.hid_width = 5,
@@ -1314,18 +1191,12 @@ static struct clk_rcg2 crypto_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(crypto_genpdopp),
 	},
 };
 
 static const struct freq_tbl ftbl_gcc_gp1_3_clk[] = {
 	F(19200000, P_XO, 1, 0,	0),
 	{ }
-};
-
-static const struct genpdopp_table gp_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 100000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 200000000},
 };
 
 static struct clk_rcg2 gp1_clk_src = {
@@ -1339,7 +1210,6 @@ static struct clk_rcg2 gp1_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll1a_sleep_parent_data,
 		.num_parents = 3,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(gp_genpdopp),
 	},
 };
 
@@ -1354,7 +1224,6 @@ static struct clk_rcg2 gp2_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll1a_sleep_parent_data,
 		.num_parents = 3,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(gp_genpdopp),
 	},
 };
 
@@ -1369,13 +1238,7 @@ static struct clk_rcg2 gp3_clk_src = {
 		.parent_data = gcc_xo_gpll0_gpll1a_sleep_parent_data,
 		.num_parents = 3,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(gp_genpdopp),
 	},
-};
-
-static const struct genpdopp_table byte_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 112500000},
-	{RPM_REGULATOR_CORNER_NORMAL, 187500000},
 };
 
 static struct clk_rcg2 byte0_clk_src = {
@@ -1388,7 +1251,6 @@ static struct clk_rcg2 byte0_clk_src = {
 		.num_parents = 3,
 		.ops = &clk_byte2_ops,
 		.flags = CLK_SET_RATE_PARENT,
-		POWER_PDOPP(byte_genpdopp),
 	},
 };
 
@@ -1402,17 +1264,12 @@ static struct clk_rcg2 byte1_clk_src = {
 		.num_parents = 3,
 		.ops = &clk_byte2_ops,
 		.flags = CLK_SET_RATE_PARENT,
-		POWER_PDOPP(byte_genpdopp),
 	},
 };
 
 static const struct freq_tbl ftbl_gcc_mdss_esc_clk[] = {
 	F(19200000, P_XO, 1, 0, 0),
 	{ }
-};
-
-static const struct genpdopp_table esc_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 19200000},
 };
 
 static struct clk_rcg2 esc0_clk_src = {
@@ -1425,7 +1282,6 @@ static struct clk_rcg2 esc0_clk_src = {
 		.parent_data = gcc_xo_dsibyte_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(esc_genpdopp),
 	},
 };
 
@@ -1439,7 +1295,6 @@ static struct clk_rcg2 esc1_clk_src = {
 		.parent_data = gcc_xo_dsibyte_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(esc_genpdopp),
 	},
 };
 
@@ -1456,12 +1311,6 @@ static const struct freq_tbl ftbl_gcc_mdss_mdp_clk[] = {
 	{ }
 };
 
-static const struct genpdopp_table mdp_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 153600000},
-	{RPM_REGULATOR_CORNER_NORMAL, 307200000},
-	{RPM_REGULATOR_CORNER_SUPER_TURBO, 366670000},
-};
-
 static struct clk_rcg2 mdp_clk_src = {
 	.cmd_rcgr = 0x4d014,
 	.hid_width = 5,
@@ -1472,13 +1321,7 @@ static struct clk_rcg2 mdp_clk_src = {
 		.parent_data = gcc_xo_gpll1_dsiphy_gpll6_gpll3a_gpll0a_parent_data,
 		.num_parents = 6,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(mdp_genpdopp),
 	},
-};
-
-static const struct genpdopp_table pclk_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 150000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 250000000},
 };
 
 static struct clk_rcg2 pclk0_clk_src = {
@@ -1492,7 +1335,6 @@ static struct clk_rcg2 pclk0_clk_src = {
 		.num_parents = 3,
 		.ops = &clk_pixel_ops,
 		.flags = CLK_SET_RATE_PARENT,
-		POWER_PDOPP(pclk_genpdopp),
 	},
 };
 
@@ -1507,17 +1349,12 @@ static struct clk_rcg2 pclk1_clk_src = {
 		.num_parents = 3,
 		.ops = &clk_pixel_ops,
 		.flags = CLK_SET_RATE_PARENT,
-		POWER_PDOPP(pclk_genpdopp),
 	},
 };
 
 static const struct freq_tbl ftbl_gcc_mdss_vsync_clk[] = {
 	F(19200000, P_XO, 1, 0,	0),
 	{ }
-};
-
-static const struct genpdopp_table vsync_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 19200000},
 };
 
 static struct clk_rcg2 vsync_clk_src = {
@@ -1530,7 +1367,6 @@ static struct clk_rcg2 vsync_clk_src = {
 		.parent_data = gcc_xo_gpll0a_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(vsync_genpdopp),
 	},
 };
 
@@ -1540,10 +1376,6 @@ static const struct freq_tbl ftbl_gcc_pdm2_clk[] = {
 };
 
 /* This is not in the documentation but is in the downstream driver */
-static const struct genpdopp_table pdm2_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 64000000},
-};
-
 static struct clk_rcg2 pdm2_clk_src = {
 	.cmd_rcgr = 0x44010,
 	.hid_width = 5,
@@ -1554,13 +1386,7 @@ static struct clk_rcg2 pdm2_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(pdm2_genpdopp),
 	},
-};
-
-static const struct genpdopp_table sdcc_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 50000000},
-	{RPM_REGULATOR_CORNER_NORMAL, 200000000},
 };
 
 static const struct freq_tbl ftbl_gcc_sdcc_apps_clk[] = {
@@ -1586,7 +1412,6 @@ static struct clk_rcg2 sdcc1_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_floor_ops,
-		POWER_PDOPP(sdcc_genpdopp),
 	},
 };
 
@@ -1601,7 +1426,6 @@ static struct clk_rcg2 sdcc2_apps_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_floor_ops,
-		POWER_PDOPP(sdcc_genpdopp),
 	},
 };
 
@@ -1654,11 +1478,6 @@ static const struct freq_tbl ftbl_gcc_usb_hs_system_clk[] = {
 	{ }
 };
 
-static const struct genpdopp_table usb_hs_system_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 57140000},
-	{RPM_REGULATOR_CORNER_NORMAL, 100000000},
-};
-
 static struct clk_rcg2 usb_hs_system_clk_src = {
 	.cmd_rcgr = 0x41010,
 	.hid_width = 5,
@@ -1669,17 +1488,12 @@ static struct clk_rcg2 usb_hs_system_clk_src = {
 		.parent_data = gcc_xo_gpll0_parent_data,
 		.num_parents = 2,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(usb_hs_system_genpdopp),
 	},
 };
 
 static const struct freq_tbl ftbl_gcc_usb_fs_system_clk[] = {
 	F(64000000, P_GPLL0, 12.5, 0, 0),
 	{ }
-};
-
-static const struct genpdopp_table usb_fs_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 64000000},
 };
 
 static struct clk_rcg2 usb_fs_system_clk_src = {
@@ -1692,17 +1506,12 @@ static struct clk_rcg2 usb_fs_system_clk_src = {
 		.parent_data = gcc_xo_gpll6_gpll0_parent_data,
 		.num_parents = 3,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(usb_fs_genpdopp),
 	},
 };
 
 static const struct freq_tbl ftbl_gcc_usb_fs_ic_clk[] = {
 	F(60000000, P_GPLL6, 1, 1, 18),
 	{ }
-};
-
-static const struct genpdopp_table usb_fs_ic_genpdopp[] = {
-	{RPM_REGULATOR_CORNER_SVS_SOC, 60000000},
 };
 
 static struct clk_rcg2 usb_fs_ic_clk_src = {
@@ -1715,7 +1524,6 @@ static struct clk_rcg2 usb_fs_ic_clk_src = {
 		.parent_data = gcc_xo_gpll6_gpll0a_parent_data,
 		.num_parents = 3,
 		.ops = &clk_rcg2_ops,
-		POWER_PDOPP(usb_fs_ic_genpdopp),
 	},
 };
 
@@ -4149,10 +3957,6 @@ static int gcc_msm8939_probe(struct platform_device *pdev)
 	regmap = qcom_cc_map(pdev, &gcc_msm8939_desc);
 	if (IS_ERR(regmap))
 		return PTR_ERR(regmap);
-
-	genpd_dev = &pdev->dev;
-	mutex_init(&genpd_lock);
-	INIT_LIST_HEAD(&genpd_head);
 
 	clk_pll_configure_sr_hpm_lp(&gpll3, regmap, &gpll3_config, true);
 	clk_pll_configure_sr_hpm_lp(&gpll4, regmap, &gpll4_config, true);
