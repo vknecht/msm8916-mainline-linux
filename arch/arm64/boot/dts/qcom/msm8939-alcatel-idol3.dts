@@ -227,6 +227,7 @@
 	};
 
 	fan53555: fan53555-regulator@60 {
+		status = "disabled";
 		compatible = "fcs,fan53555";
 		reg = <0x60>;
 		pinctrl-names = "default";
