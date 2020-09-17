@@ -134,6 +134,9 @@
 	accelerometer@e {
 		compatible = "kionix,kxtj21009";
 		reg = <0x0e>;
+		mount-matrix = "-1", "0", "0",
+			       "0", "-1", "0",
+			       "0", "0", "-1";
 	};
 
 	proximity@39 {
