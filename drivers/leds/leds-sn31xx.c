@@ -191,18 +191,58 @@ static int sn31xx_blink_set(struct led_classdev *cdev,
 		ret = regmap_multi_reg_write(led->chip->regmap, sn31xx_reg_imax,
 					     ARRAY_SIZE(sn31xx_reg_imax));
 
-	} else { /* blink mode 2 in downstream */
+	} else if (*delay_on == 1) {
+		pr_info("sn31xx: blink mode 1\n");
+		ret = regmap_write(led->chip->regmap, SN31XX_RESET, 0x00);
+		ret = regmap_write(led->chip->regmap, SN31XX_RST1, 0x20);
+		ret = regmap_write(led->chip->regmap, SN31XX_MODE, 0x20);
+		//ret = regmap_write(led->chip->regmap, SN31XX_RST1, 0x20);
+		ret = regmap_multi_reg_write(led->chip->regmap, sn31xx_reg_imax,
+					     ARRAY_SIZE(sn31xx_reg_imax));
+		ret = regmap_write(led->chip->regmap, SN31XX_T0, 0x00);
+		ret = regmap_write(led->chip->regmap, SN31XX_T1T2, 0x80);
+		ret = regmap_write(led->chip->regmap, SN31XX_T3T4, 0x88);
+		ret = regmap_write(led->chip->regmap, SN31XX_BLINK, 0x00);
+	} else if (*delay_on == 2) {
 		pr_info("sn31xx: blink mode 2\n");
 		ret = regmap_write(led->chip->regmap, SN31XX_RESET, 0x00);
+		ret = regmap_write(led->chip->regmap, SN31XX_RST1, 0x20);
 		ret = regmap_write(led->chip->regmap, SN31XX_MODE, 0x20);
-		ret = regmap_write(led->chip->regmap, SN31XX_MODE, 0x20);
+		//ret = regmap_write(led->chip->regmap, SN31XX_RST1, 0x20);
 		ret = regmap_multi_reg_write(led->chip->regmap, sn31xx_reg_imax,
 					     ARRAY_SIZE(sn31xx_reg_imax));
 		ret = regmap_write(led->chip->regmap, SN31XX_T0, 0x00);
 		ret = regmap_write(led->chip->regmap, SN31XX_T1T2, 0x60);
 		ret = regmap_write(led->chip->regmap, SN31XX_T3T4, 0x06);
 		ret = regmap_write(led->chip->regmap, SN31XX_BLINK, 0x00);
+	} else if (*delay_on == 3) {
+		pr_info("sn31xx: blink mode quick\n");
+		ret = regmap_write(led->chip->regmap, SN31XX_RESET, 0x00);
+		ret = regmap_write(led->chip->regmap, SN31XX_RST1, 0x20);
+		ret = regmap_write(led->chip->regmap, SN31XX_MODE, 0x20);
+		//ret = regmap_write(led->chip->regmap, SN31XX_RST1, 0x20);
+		ret = regmap_multi_reg_write(led->chip->regmap, sn31xx_reg_imax,
+					     ARRAY_SIZE(sn31xx_reg_imax));
+		ret = regmap_write(led->chip->regmap, SN31XX_T0, 0x00);
+		ret = regmap_write(led->chip->regmap, SN31XX_T1T2, 0x06);
+		ret = regmap_write(led->chip->regmap, SN31XX_T3T4, 0x06);
+		ret = regmap_write(led->chip->regmap, SN31XX_BLINK, 0x00);
+	} else if (*delay_on == 4) {
+		pr_info("sn31xx: blink mode delayed quick\n");
+		ret = regmap_write(led->chip->regmap, SN31XX_RESET, 0x00);
+		//ret = regmap_write(led->chip->regmap, SN31XX_RST1, 0x20);
+		ret = regmap_write(led->chip->regmap, SN31XX_MODE, 0x20);
+		ret = regmap_write(led->chip->regmap, SN31XX_RST1, 0x20);
+		ret = regmap_multi_reg_write(led->chip->regmap, sn31xx_reg_imax,
+					     ARRAY_SIZE(sn31xx_reg_imax));
+		ret = regmap_write(led->chip->regmap, SN31XX_T0, 0x10);
+		ret = regmap_write(led->chip->regmap, SN31XX_T1T2, 0x06);
+		ret = regmap_write(led->chip->regmap, SN31XX_T3T4, 0x06);
+		ret = regmap_write(led->chip->regmap, SN31XX_BLINK, 0x00);
 	}
+
+	if (ret)
+		pr_warn("sn31xx: some blinking regmap failed...\n");
 
 	mutex_unlock(&led->chip->mutex);
 
