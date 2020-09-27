@@ -263,7 +263,7 @@ static struct rpmpd *msm8939_rpmpds[] = {
 static const struct rpmpd_desc msm8939_desc = {
 	.rpmpds = msm8939_rpmpds,
 	.num_pds = ARRAY_SIZE(msm8939_rpmpds),
-	.max_state = RPM_SMD_LEVEL_TURBO_HIGH,
+	.max_state = MAX_CORNER_RPMPD_STATE,
 };
 
 static const struct of_device_id rpmpd_match_table[] = {
