@@ -28,6 +28,15 @@ config DRM_PANEL_ASUS_Z00T_TM5P5_NT35596
 	  NT35596 1080x1920 video mode panel as found in some Asus
 	  Zenfone 2 Laser Z00T devices.
 
+config DRM_PANEL_AUO_HX8394D
+	tristate "Auo HX8394D panel"
+	depends on GPIOLIB && OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for the Auo HX8394D
+	  720x1280 video mode panel as found in eg. Alcatel Idol 3 4.7.
+
 config DRM_PANEL_BOE_HIMAX8279D
 	tristate "Boe Himax8279d panel"
 	depends on OF
