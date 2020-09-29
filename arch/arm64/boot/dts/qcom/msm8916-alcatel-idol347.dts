@@ -1,0 +1,515 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+
+#include "msm8916-pm8916.dtsi"
+#include "msm8916-no-psci.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/pinctrl/qcom,pmic-mpp.h>
+#include <dt-bindings/sound/apq8016-lpass.h>
+
+/ {
+ 	model = "Alcatel OneTouch Idol 3 (4.7)";
+ 	compatible = "alcatel,idol347", "qcom,msm8916";
+
+	aliases {
+		serial0 = &blsp1_uart2;
+	};
+
+	chosen {
+		stdout-path = "serial0";
+	};
+
+	reserved-memory {
+		/delete-node/ rmtfs@86700000;
+		/delete-node/ reserved@8668000; //missing 0 in msm8916.dtsi
+		/delete-node/ wcnss@89300000;
+		/delete-node/ venus@89900000;
+		/delete-node/ mba@8ea00000;
+
+		rmtfs: rmtfs@86680000 {
+			compatible = "qcom,rmtfs-mem";
+			reg = <0x0 0x86680000 0x0 0x160000>;
+			no-map;
+
+			qcom,client-id = <1>;
+		};
+
+		mpss_mem: mpss@86800000 {
+			//status = "disabled";
+			reg = <0x0 0x86800000 0x0 0x5600000>;
+			no-map;
+		};
+
+		wcnss_mem: wcnss@8be00000 {
+			reg = <0x0 0x8be00000 0x0 0x600000>;
+			no-map;
+		};
+
+		mba_mem: mba@8ea00000 {
+			reg = <0x0 0x8ea00000 0x0 0x200000>;
+			no-map;
+		};
+
+		venus_mem: venus@90000000 {
+			reg = <0x0 0x90000000 0x0 0x1200000>;
+			no-map;
+		};
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		pwms = <&pm8916_pwm 0 100000>;
+
+		brightness-levels = <0 255>;
+		num-interpolated-steps = <255>;
+		default-brightness-level = <64>;
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio_keys_default>;
+
+		label = "GPIO Buttons";
+
+		volume-up {
+			label = "Volume Up";
+			gpios = <&msmgpio 107 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEUP>;
+		};
+	};
+
+	usb_id: usb-id {
+		compatible = "linux,extcon-usb-gpio";
+		id-gpio = <&msmgpio 110 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&usb_id_default>;
+	};
+};
+
+&blsp1_uart2 {
+	status = "okay";
+};
+
+&blsp_i2c3 {
+	speaker_codec: audio-codec@34 {
+		compatible = "nxp,tfa9897";
+		reg = <0x34>;
+		channel = <0>; // 0: left, 1: right
+		reset-gpios = <&msmgpio 51 GPIO_ACTIVE_HIGH>;
+		switch-gpios = <&msmgpio 91 GPIO_ACTIVE_HIGH>;
+		vdd-supply = <&pm8916_l6>;
+		#sound-dai-cells = <0>;
+	};
+
+	speaker_codec2: audio-codec@36 {
+		compatible = "nxp,tfa9897";
+		reg = <0x36>;
+		channel = <1>;
+		reset-gpios = <&msmgpio 51 GPIO_ACTIVE_HIGH>;
+		switch-gpios = <&msmgpio 92 GPIO_ACTIVE_HIGH>;
+		vdd-supply = <&pm8916_l6>;
+		#sound-dai-cells = <0>;
+	};
+};
+
+&blsp_i2c4 {
+	status = "okay";
+
+	touchscreen@26 {
+		compatible = "mstar,msg26xx";
+		reg = <0x26>;
+		vdd-supply = <&pm8916_l17>;
+		vddo-supply = <&pm8916_l5>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ts_int_active>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <13 IRQ_TYPE_EDGE_FALLING>;
+		reset-gpios = <&msmgpio 100 GPIO_ACTIVE_HIGH>;
+
+		touchscreen-size-x = <720>;
+		touchscreen-size-y = <1280>;
+	};
+
+	touchscreen@38 {
+		status = "disabled";
+		compatible = "edt,edt-ft5406";
+		reg = <0x38>;
+		vcc-supply = <&pm8916_l5>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <13 0x2008>;
+		reset-gpios = <&msmgpio 100 GPIO_ACTIVE_LOW>;
+
+		touchscreen-size-x = <720>;
+		touchscreen-size-y = <1280>;
+	};
+};
+
+&blsp_i2c5 {
+	status = "okay";
+
+	magnetometer@c {
+		compatible = "asahi-kasei,ak09911";
+		reg = <0x0c>;
+		vdd-supply = <&pm8916_l17>;
+		vid-supply = <&pm8916_l6>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mag_reset_default>;
+		mount-matrix = "0", "1", "0",
+			       "-1", "0", "0",
+			       "0", "0", "1";
+	};
+
+	accelerometer@e {
+		compatible = "kionix,kxtj21009";
+		reg = <0x0e>;
+		mount-matrix = "-1", "0", "0",
+			       "0", "-1", "0",
+			       "0", "0", "-1";
+	};
+
+	gyroscope@68 {
+		compatible = "bosch,bmg160";
+		reg = <0x68>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <97 IRQ_TYPE_EDGE_RISING>; //need 98 too as in ds ?
+	};
+
+	alsps0@48 {
+		compatible = "sensortek,stk3310";
+		reg = <0x48>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <12 IRQ_TYPE_EDGE_FALLING>;
+	};
+};
+
+&blsp_i2c6 {
+	status = "okay";
+
+	led-controller@68 {
+		compatible = "si-en,sn31xx";
+		reg = <0x68>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		vio-supply = <&pm8916_l6>;
+
+		led@0 {
+			reg = <0>;
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_WHITE>;
+			led-max-microamp = <10000>; //5000>;
+			enable-gpios = <&msmgpio 102 GPIO_ACTIVE_HIGH>;
+			enable2-gpios = <&msmgpio 89 GPIO_ACTIVE_HIGH>;
+		};
+	};
+};
+
+&dsi0 {
+	panel@0 {
+		compatible = "auo,hx8394d";
+		reg = <0>;
+
+		backlight = <&backlight>;
+		vdd-supply = <&pm8916_l17>;
+		vddio-supply = <&pm8916_l6>;
+		reset-gpios = <&msmgpio 25 GPIO_ACTIVE_LOW>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi0_out>;
+			};
+		};
+	};
+};
+
+&dsi0_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel_in>;
+};
+
+&dsi_phy0 {
+	qcom,dsi-phy-regulator-ldo-mode;
+};
+
+&lpass {
+	status = "okay";
+};
+
+&msmgpio {
+	gpio_keys_default: gpio-keys-default {
+		pins = "gpio107";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-pull-up;
+	};
+
+	mag_reset_default: mag-reset-default {
+		pins = "gpio8";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	mdss {
+		mdss_active: mdss-active {
+			pins = "gpio25";
+			function = "gpio";
+
+			drive-strength = <8>;
+			bias-disable;
+		};
+		mdss_suspend: mdss-suspend {
+			pins = "gpio25";
+			function = "gpio";
+
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	ts_pins: ts_pins {
+		ts_int_active: pmx_ts_int_active {
+			pins = "gpio13";
+			function = "gpio";
+
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+
+		ts_reset_active: pmx_ts_reset_active {
+			pins = "gpio12";
+			function = "gpio";
+
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+	};
+
+	usb_id_default: usb-id-default {
+		pins = "gpio110";
+		function = "gpio";
+
+		drive-strength = <8>;
+		bias-pull-up;
+	};
+};
+
+&pm8916_mpps {
+	pwm_out: mpp4 {
+		pinconf {
+			pins = "mpp4";
+			function = "digital";
+			output-low;
+			power-source = <PM8916_MPP_L5>;
+			qcom,dtest = <1>;
+		};
+	};
+};
+
+&pm8916_pwm {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwm_out>;
+};
+
+&pm8916_resin {
+	status = "okay";
+	linux,code = <KEY_VOLUMEDOWN>;
+};
+
+&pm8916_vib {
+	status = "okay";
+};
+
+&pronto {
+	status = "okay";
+};
+
+&sdhc_1 {
+	status = "okay";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc1_clk_on &sdc1_cmd_on &sdc1_data_on>;
+	pinctrl-1 = <&sdc1_clk_off &sdc1_cmd_off &sdc1_data_off>;
+};
+
+&sdhc_2 {
+	status = "okay";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
+	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
+
+	cd-gpios = <&msmgpio 38 GPIO_ACTIVE_LOW>;
+};
+
+&usb {
+	status = "okay";
+	extcon = <&usb_id>, <&usb_id>;
+};
+
+&usb_hs_phy {
+	extcon = <&usb_id>;
+};
+
+&sound {
+	status = "okay";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&cdc_pdm_lines_act &ext_sec_tlmm_lines_act>;
+	pinctrl-1 = <&cdc_pdm_lines_sus &ext_sec_tlmm_lines_sus>;
+
+	qcom,model = "alcatel-idol347";
+	qcom,audio-routing =
+		"AMIC1", "MIC BIAS External1",
+		"AMIC2", "MIC BIAS Internal2",
+		"AMIC3", "MIC BIAS External1";
+
+	internal-codec-playback-dai-link@0 {
+		link-name = "WCD";
+		cpu {
+			sound-dai = <&lpass MI2S_PRIMARY>;
+		};
+		codec {
+			sound-dai = <&lpass_codec 0>, <&wcd_codec 0>;
+		};
+	};
+
+	internal-codec-capture-dai-link@0 {
+		link-name = "WCD-Capture";
+		cpu {
+			sound-dai = <&lpass MI2S_TERTIARY>;
+		};
+		codec {
+			sound-dai = <&lpass_codec 1>, <&wcd_codec 1>;
+		};
+	};
+
+	external-dai-link@0 {
+		link-name = "Speaker";
+		cpu {
+			sound-dai = <&lpass MI2S_QUATERNARY>;
+		};
+		codec {
+			sound-dai = <&speaker_codec>; //, <&speaker_codec2>;
+		};
+	};
+};
+
+&wcd_codec {
+	qcom,micbias-lvl = <2800>;
+	qcom,mbhc-vthreshold-low = <75 100 120 180 500>;
+	qcom,mbhc-vthreshold-high = <75 100 120 180 500>;
+	qcom,hphl-jack-type-normally-open;
+};
+
+&smd_rpm_regulators {
+	vdd_l1_l2_l3-supply = <&pm8916_s3>;
+	vdd_l4_l5_l6-supply = <&pm8916_s4>;
+	vdd_l7-supply = <&pm8916_s4>;
+
+	s3 {
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1300000>;
+	};
+
+	s4 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <2100000>;
+	};
+
+	l1 {
+		regulator-min-microvolt = <1225000>;
+		regulator-max-microvolt = <1225000>;
+	};
+
+	l2 {
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+	};
+
+	l4 {
+		regulator-min-microvolt = <2050000>;
+		regulator-max-microvolt = <2050000>;
+	};
+
+	l5 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+
+	l6 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+
+	l7 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+
+	l8 {
+		regulator-min-microvolt = <2850000>;
+		regulator-max-microvolt = <2900000>;
+	};
+
+	l9 {
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	l10 {
+		regulator-min-microvolt = <2700000>;
+		regulator-max-microvolt = <2800000>;
+	};
+
+	l11 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <2950000>;
+		regulator-allow-set-load;
+		regulator-system-load = <200000>;
+	};
+
+	l12 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <2950000>;
+	};
+
+	l13 {
+		regulator-min-microvolt = <3075000>;
+		regulator-max-microvolt = <3075000>;
+	};
+
+	l14 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	l15 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	l16 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	l17 {
+		regulator-min-microvolt = <2850000>;
+		regulator-max-microvolt = <2850000>;
+	};
+
+	l18 {
+		regulator-min-microvolt = <2700000>;
+		regulator-max-microvolt = <2700000>;
+	};
+};
