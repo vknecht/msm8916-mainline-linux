@@ -8,7 +8,6 @@
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/pinctrl/qcom,pmic-mpp.h>
-#include <dt-bindings/sound/apq8016-lpass.h>
 
 / {
 	model = "Xiaomi Mi 4i";
@@ -223,15 +222,6 @@
 			atmel,version = <0x21>;
 			atmel,wake-up-self-adcx = <0x10>;
 		};				
-	};
-};
-
-&blsp_i2c6 {
-	status = "okay";
-	speaker_codec: audio-codec@34 {
-		compatible = "nxp,tfa9895";
-		reg = <0x34>;
-		#sound-dai-cells = <0>;
 	};
 };
 
@@ -525,57 +515,3 @@
 	linux,code = <KEY_VOLUMEDOWN>;
 };
 
-&lpass {
-	status = "okay";
-};
-
-&sound {
-	status = "okay";
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&cdc_pdm_lines_act &ext_sec_tlmm_lines_act>;
-	pinctrl-1 = <&cdc_pdm_lines_sus &ext_sec_tlmm_lines_sus>;
-
-	qcom-model = "xiaomi-ferrari";
-	qcom,audio-routing = 
-			"AMIC1", "MIC BIAS External1",
-			"AMIC2", "MIC BIAS External2",
-			"AMIC3", "MIC BIAS External1";
-			//"AMIC4", "MIC BIAS1 External";
-
-	internal-codec-playback-dai-link@0 {
-		link-name = "WCD";
-		cpu {
-			sound-dai = <&lpass MI2S_PRIMARY>;
-		};
-		codec {
-			sound-dai = <&lpass_codec 0>, <&wcd_codec 0>;
-		};
-	};
-
-	internal-codec-capture-dai-link@0 {
-		link-name = "WCD-Capture";
-		cpu {
-			sound-dai = <&lpass MI2S_TERTIARY>;
-		};
-		codec {
-			sound-dai = <&lpass_codec 1>, <&wcd_codec 1>;
-		};
-	};
-
-	external-dai-link@0 {
-		link-name = "Speaker";
-		cpu {
-			sound-dai = <&lpass MI2S_QUATERNARY>;
-		};
-		codec {
-			sound-dai = <&speaker_codec>;
-		};
-	};			
-};
-
-&wcd_codec {
-	qcom,micbias-lvl = <2800>;
-	qcom,mbhc-vthreshold-low = <75 100 120 180 500>;
-	qcom,mbhc-vthreshold-high = <75 100 120 180 500>;
-	qcom,hphl-jack-type-normally-open;
-};
