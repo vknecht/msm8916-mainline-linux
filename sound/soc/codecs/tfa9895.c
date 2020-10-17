@@ -54,8 +54,8 @@ struct tfa9897_priv {
 	struct gpio_desc	*switch_gpiod;
 	struct regmap		*regmap;
 	struct regulator	*vdd;
-	int			spk_state;
-	int			rcv_state;
+	int			power_state;
+	int			speaker_mode;
 	u32			index;
 	u32			channel;
 };
@@ -167,34 +167,18 @@ static const struct reg_sequence tfa9895_reg_init[] = {
 
 static const struct snd_soc_dapm_widget tfa9897_dapm_widgets[] = {
 	SND_SOC_DAPM_OUTPUT("Speaker"),
-	SND_SOC_DAPM_OUTPUT("SpeakerTop"),
-	SND_SOC_DAPM_OUTPUT("SpeakerBottom"),
 	SND_SOC_DAPM_OUT_DRV_E("PWUP", TFA98XX_SYS_CTRL, 0, 1, NULL, 0, NULL, 0),
-	SND_SOC_DAPM_OUTPUT("EarpieceTop"),
-	SND_SOC_DAPM_OUTPUT("EarpieceBottom"),
 };
 
 static const struct snd_soc_dapm_route tfa9897_dapm_routes[] = {
 	{ "PWUP", NULL, "HiFi Playback" },
 	{ "Speaker", NULL, "PWUP" },
-	{ "SpeakerTop", NULL, "PWUP" },
-	{ "SpeakerBottom", NULL, "PWUP" },
-	{ "EarpieceTop", NULL, "PWUP" },
-	{ "EarpieceBottom", NULL, "PWUP" },
 };
 
 void tfa9897_reset(struct tfa9897_priv *tfa9897, int val)
 {
 	if (tfa9897->reset_gpiod)
 		gpiod_set_value_cansleep(tfa9897->reset_gpiod, val);
-
-	return;
-}
-
-void tfa9897_switch(struct tfa9897_priv *tfa9897, int val)
-{
-	if (tfa9897->switch_gpiod)
-		gpiod_set_value_cansleep(tfa9897->switch_gpiod, val);
 
 	return;
 }
@@ -206,179 +190,99 @@ static const struct reg_sequence tfa9897_reg_switch[] = {
 	{ TFA98XX_SYS_CTRL, 0x0608 },
 };
 
-int get_spk_top(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
+void tfa9897_switch(struct tfa9897_priv *tfa9897, int val)
 {
-	//struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	//struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
-	//ucontrol->value.integer.value[0] = tfa9897->spk_state;
-	ucontrol->value.integer.value[0] = tfa_list[0]->spk_state;
+	if (tfa9897->switch_gpiod) {
+		gpiod_set_value_cansleep(tfa9897->switch_gpiod, val);
+
+		regmap_multi_reg_write(tfa9897->regmap, tfa9897_reg_switch,
+							   ARRAY_SIZE(tfa9897_reg_switch));
+	}
+
+	return;
+}
+
+int get_power(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
+	ucontrol->value.integer.value[0] = tfa9897->power_state;
+
 	return 0;
 }
 
-int put_spk_top(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
+int put_power(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
-	//struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	//struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
-	struct tfa9897_priv *tfa9897 = tfa_list[0];
-	//int state = ucontrol->value.enumerated.item[0];
+	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
 	int state = ucontrol->value.enumerated.item[0];
-pr_info("put_spk_top %d\n", state);
+
+	dev_info(&tfa9897->client->dev, "put_power %d\n", state);
+
 	if (state) {
-		tfa9897_reset(tfa9897, 1); //added
-		msleep(5); //added
+		tfa9897_reset(tfa9897, 1);
+		msleep(5);
 		tfa9897_reset(tfa9897, 0);
+		/* Set amp on! */
+		regmap_update_bits(tfa9897->regmap, TFA98XX_SYS_CTRL, (1 << 3), (1 << 3));
+	}
+	else {
+		regmap_update_bits(tfa9897->regmap, TFA98XX_SYS_CTRL, (1 << 3), (0 << 3));
+		tfa9897_reset(tfa9897, 1);
+	}
+	tfa9897->power_state = state;
+
+	return 0;
+}
+
+int get_mode(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
+	ucontrol->value.integer.value[0] = tfa9897->speaker_mode;
+
+	return 0;
+}
+
+int put_mode(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
+	int mode = ucontrol->value.enumerated.item[0];
+
+	dev_info(&tfa9897->client->dev, "put_mode %d\n", mode);
+
+	if (mode)
+		tfa9897_switch(tfa9897, 1);
+	else
 		tfa9897_switch(tfa9897, 0);
 
-	        regmap_multi_reg_write(tfa9897->regmap, tfa9897_reg_switch,
-				       ARRAY_SIZE(tfa9897_reg_switch));
-		/* Set amp on! */
-		regmap_update_bits(tfa9897->regmap, TFA98XX_SYS_CTRL, (1 << 3), (1 << 3));
-	}
-	else {
-		tfa9897_reset(tfa9897, 1);
-	}
-	tfa9897->spk_state = state;
-	//tfa_list[0]->spk_state = state; //tfa9897->spk_state = state;
+	tfa9897->speaker_mode = mode;
+
 	return 0;
 }
 
-int get_rcv_top(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
-{
-	//struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	//struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
-	//ucontrol->value.integer.value[0] = tfa9897->rcv_state;
-	ucontrol->value.integer.value[0] = tfa_list[0]->rcv_state;
-	return 0;
-}
-
-int put_rcv_top(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
-{
-	//struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	//struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
-	struct tfa9897_priv *tfa9897 = tfa_list[0];
-	int state = ucontrol->value.enumerated.item[0];
-pr_info("put_rcv_top %d\n", state);
-	if (state) {
-		tfa9897_reset(tfa9897, 1); //added
-		msleep(5); //added
-		tfa9897_reset(tfa9897, 0);
-		tfa9897_switch(tfa9897, 1);
-
-	        regmap_multi_reg_write(tfa9897->regmap, tfa9897_reg_switch,
-				       ARRAY_SIZE(tfa9897_reg_switch));
-		/* Set amp on! */
-		regmap_update_bits(tfa9897->regmap, TFA98XX_SYS_CTRL, (1 << 3), (1 << 3));
-	}
-	else {
-		tfa9897_reset(tfa9897, 1);
-	}
-	tfa9897->rcv_state = state;
-	//tfa_list[0]->rcv_state = state;
-	return 0;
-}
-//////////////////////
-int get_spk_btm(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
-{
-	//struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	//struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
-	//ucontrol->value.integer.value[0] = tfa9897->spk_state;
-	ucontrol->value.integer.value[0] = tfa_list[1]->spk_state;
-	return 0;
-}
-
-int put_spk_btm(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
-{
-	//struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	//struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
-	struct tfa9897_priv *tfa9897 = tfa_list[1];
-	//int state = ucontrol->value.enumerated.item[0];
-	int state = ucontrol->value.enumerated.item[0];
-
-pr_info("put_spk_btm %d\n", state);
-
-	if (state) {
-		tfa9897_reset(tfa9897, 1); //added
-		msleep(5); //added
-		tfa9897_reset(tfa9897, 0);
-		tfa9897_switch(tfa9897, 0);
-
-	        regmap_multi_reg_write(tfa9897->regmap, tfa9897_reg_switch,
-				       ARRAY_SIZE(tfa9897_reg_switch));
-		/* Set amp on! */
-		regmap_update_bits(tfa9897->regmap, TFA98XX_SYS_CTRL, (1 << 3), (1 << 3));
-	}
-	else {
-		tfa9897_reset(tfa9897, 1);
-	}
-	tfa9897->spk_state = state;
-	//tfa_list[0]->spk_state = state; //tfa9897->spk_state = state;
-	return 0;
-}
-
-int get_rcv_btm(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
-{
-	//struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	//struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
-	//ucontrol->value.integer.value[0] = tfa9897->rcv_state;
-	ucontrol->value.integer.value[0] = tfa_list[1]->rcv_state;
-	return 0;
-}
-
-int put_rcv_btm(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
-{
-	//struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
-	//struct tfa9897_priv *tfa9897 = snd_soc_component_get_drvdata(component);
-	struct tfa9897_priv *tfa9897 = tfa_list[1];
-	int state = ucontrol->value.enumerated.item[0];
-
-pr_info("put_rcv_btm %d\n", state);
-	if (state) {
-		tfa9897_reset(tfa9897, 1); //added
-		msleep(5); //added
-		tfa9897_reset(tfa9897, 0);
-		tfa9897_switch(tfa9897, 1);
-
-	        regmap_multi_reg_write(tfa9897->regmap, tfa9897_reg_switch,
-				       ARRAY_SIZE(tfa9897_reg_switch));
-		/* Set amp on! */
-		regmap_update_bits(tfa9897->regmap, TFA98XX_SYS_CTRL, (1 << 3), (1 << 3));
-	}
-	else {
-		tfa9897_reset(tfa9897, 1);
-	}
-	tfa9897->rcv_state = state;
-	//tfa_list[0]->rcv_state = state;
-	return 0;
-}
-//////////////////////
-/////////////////////
-static const char * const amp_text[] = { "Off", "On" };
-static const char * const amp_switch_text[] = { "Off", "Top", "Bottom" };
-static const struct soc_enum amp_enum = SOC_ENUM_SINGLE_EXT(2, amp_text);
-static const struct soc_enum amp_enum_switch = SOC_ENUM_SINGLE_EXT(3, amp_switch_text);
+static const char * const power_text[] = { "Off", "On" };
+static const char * const mode_text[] = { "Speaker", "Earpiece" };
+static const struct soc_enum power_enum = SOC_ENUM_SINGLE_EXT(2, power_text);
+static const struct soc_enum mode_enum = SOC_ENUM_SINGLE_EXT(2, mode_text);
 
 static const struct snd_kcontrol_new tfa9897_controls[] = {
-	SOC_ENUM_EXT("TFA98XX_SPK_AMP_TOP", amp_enum, get_spk_top, put_spk_top),
-	SOC_ENUM_EXT("TFA98XX_RCV_AMP_TOP", amp_enum, get_rcv_top, put_rcv_top),
-	SOC_ENUM_EXT("TFA98XX_SPK_AMP_BTM", amp_enum, get_spk_btm, put_spk_btm),
-	SOC_ENUM_EXT("TFA98XX_RCV_AMP_BTM", amp_enum, get_rcv_btm, put_rcv_btm),
-#if 0
-	SOC_ENUM_EXT("TFA98XX_RESET", amp_enum, get_reset, put_reset),
-	SOC_ENUM_EXT("TFA98XX_POWER_SWITCH", amp_enum_switch, get_switch, put_switch),
-#endif
+	SOC_ENUM_EXT("Power Switch", power_enum, get_power, put_power),
+	SOC_ENUM_EXT("RCV Mode", mode_enum, get_mode, put_mode),
 };
 
 
 static const struct snd_soc_component_driver tfa9897_component = {
-	.controls		= tfa9897_controls,
-	.num_controls		= ARRAY_SIZE(tfa9897_controls),
-	.dapm_widgets		= tfa9897_dapm_widgets,
-	.num_dapm_widgets	= ARRAY_SIZE(tfa9897_dapm_widgets),
-	.dapm_routes		= tfa9897_dapm_routes,
-	.num_dapm_routes	= ARRAY_SIZE(tfa9897_dapm_routes),
-	.idle_bias_on		= 1,
-	.use_pmdown_time	= 1,
-	.endianness		= 1,
+	.controls				= tfa9897_controls,
+	.num_controls			= ARRAY_SIZE(tfa9897_controls),
+	.dapm_widgets			= tfa9897_dapm_widgets,
+	.num_dapm_widgets		= ARRAY_SIZE(tfa9897_dapm_widgets),
+	.dapm_routes			= tfa9897_dapm_routes,
+	.num_dapm_routes		= ARRAY_SIZE(tfa9897_dapm_routes),
+	.idle_bias_on			= 1,
+	.use_pmdown_time		= 1,
+	.endianness				= 1,
 	.non_legacy_dai_naming	= 1,
 };
 
@@ -391,7 +295,7 @@ static struct snd_soc_dai_driver tfa9897_dai = {
 	.playback = {
 		.stream_name	= "HiFi Playback",
 		.formats	= SNDRV_PCM_FMTBIT_S16_LE |
-				  SNDRV_PCM_FMTBIT_S24_LE,	//TODO: only S16_LE in downstream ?
+					  SNDRV_PCM_FMTBIT_S24_LE,	//TODO: only S16_LE in downstream ?
 		.rates		= SNDRV_PCM_RATE_8000_48000,
 		.rate_min	= 8000,
 		.rate_max	= 48000,
@@ -400,6 +304,27 @@ static struct snd_soc_dai_driver tfa9897_dai = {
 	},
 	.ops = &tfa9897_dai_ops,
 };
+
+#if 0
+static ssize_t tfa9897_switch1_set(struct device *dev,
+				   struct device_attribute *attr,
+				   const char *buf, size_t count)
+{
+	struct tfa9897_priv *tfa9897 = dev_get_drvdata(dev);
+	long int val;
+	int ret;
+
+	ret = kstrtol(buf, 10, &val);
+	if (ret != 0)
+		return ret;
+dev_info(dev, "switch1 !\n");
+	tfa9897_switch(tfa9897, val);
+
+	return count;
+}
+
+static DEVICE_ATTR(switch1, 0644, NULL, tfa9897_switch1_set);
+#endif
 
 static int tfa9897_init(struct i2c_client *i2c, struct regmap *regmap) {
 	struct device *dev = &i2c->dev;
@@ -423,7 +348,7 @@ static int tfa9897_init(struct i2c_client *i2c, struct regmap *regmap) {
 	tfa9897->switch_gpiod = devm_gpiod_get_optional(dev, "switch", GPIOD_OUT_HIGH);
 	if (IS_ERR(tfa9897->switch_gpiod))
 		return PTR_ERR(tfa9897->switch_gpiod);
-	tfa9897_switch(tfa9897, 0);
+	//tfa9897_switch(tfa9897, 0); //crash mem abort
 
 	tfa9897->vdd = devm_regulator_get_optional(dev, "vdd");
 	if (IS_ERR(tfa9897->vdd)) {
@@ -451,29 +376,18 @@ static int tfa9897_init(struct i2c_client *i2c, struct regmap *regmap) {
 		return ret;
 	}
 
-#if 0
-	tfa9897_reset(tfa9897, 1);
-	msleep(5);
-	tfa9897_reset(tfa9897, 0);
-
-	/* From downstream sound/soc/msm/tfa9897.c#L873-L876 */
-	ret = regmap_multi_reg_write(regmap, tfa9897_reg_switch,
-				     ARRAY_SIZE(tfa9897_reg_switch));
-
-	/* Set amp on! */
-	ret = regmap_update_bits(regmap, TFA98XX_SYS_CTRL, (1 << 3), (1 << 3));
-
-	/* Switch really required ? */
-	//gpiod_set_value_cansleep(switch_gpiod, 1);
-#endif
-
 	tfa9897->regmap = regmap;
-	tfa9897->spk_state = 0;
-	tfa9897->rcv_state = 0;
+	tfa9897->power_state = 0;
+	tfa9897->speaker_mode = 0;
+	tfa9897->index = tfa_num;
 
 	tfa9897->client = i2c;
 	i2c_set_clientdata(i2c, tfa9897);
-
+#if 0
+	ret = device_create_file(dev, &dev_attr_switch1);
+	if (ret != 0)
+		dev_err(dev, "Unable to create switch1 file!\n");
+#endif
 	return 0;
 }
 
@@ -546,13 +460,12 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 	switch(val) {
 	case TFA9895_REVISION:
 		return devm_snd_soc_register_component(dev, &tfa9895_component,
-						       &tfa9895_dai, 1);
+											   &tfa9895_dai, 1);
+		break;
 	case TFA9897_REVISION:
-		if (tfa_num < 1) {
-			tfa_num++;
-			return devm_snd_soc_register_component(dev, &tfa9897_component,
-							       &tfa9897_dai, 1);
-		}
+		tfa_num++;
+		return devm_snd_soc_register_component(dev, &tfa9897_component,
+											   &tfa9897_dai, 1);
 		break;
 	default:
 		break;
