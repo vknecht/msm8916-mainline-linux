@@ -207,24 +207,26 @@
 		onnn,restore-reg;
 	};
 
-	speaker_codec: audio-codec@34 {
+	speaker_codec_top: audio-codec@34 {
 		compatible = "nxp,tfa9897";
 		reg = <0x34>;
 		channel = <0>; // 0: left, 1: right
-		reset-gpios = <&msmgpio 86 GPIO_ACTIVE_HIGH>;
+		/* reset-gpios = <&msmgpio 86 GPIO_ACTIVE_HIGH>; */
 		switch-gpios = <&msmgpio 91 GPIO_ACTIVE_HIGH>;
 		vdd-supply = <&pm8916_l6>;
 		#sound-dai-cells = <0>;
+		sound-name-prefix = "Speaker Top";
 	};
 
-	speaker_codec2: audio-codec@36 {
+	speaker_codec_bottom: audio-codec@36 {
 		compatible = "nxp,tfa9897";
 		reg = <0x36>;
 		channel = <1>;
-		reset-gpios = <&msmgpio 88 GPIO_ACTIVE_HIGH>;
+		/* reset-gpios = <&msmgpio 88 GPIO_ACTIVE_HIGH>; */
 		switch-gpios = <&msmgpio 92 GPIO_ACTIVE_HIGH>;
 		vdd-supply = <&pm8916_l6>;
 		#sound-dai-cells = <0>;
+		sound-name-prefix = "Speaker Bottom";
 	};
 
 	fan53555: fan53555-regulator@60 {
@@ -662,7 +664,7 @@
 			sound-dai = <&lpass MI2S_QUATERNARY>;
 		};
 		codec {
-			sound-dai = <&speaker_codec>;
+			sound-dai = <&speaker_codec_top>, <&speaker_codec_bottom>;
 		};
 	};
 };
