@@ -49,7 +49,7 @@
 			sound-dai = <&q6routing>;
 		};
 		codec {
-			sound-dai = <&speaker_codec>;
+			sound-dai = <&speaker_codec_top>, <&speaker_codec_bottom>;
 		};
 	};
 };
