@@ -371,14 +371,14 @@
 	pinctrl-0 = <&cdc_pdm_lines_act &ext_sec_tlmm_lines_act>;
 	pinctrl-1 = <&cdc_pdm_lines_sus &ext_sec_tlmm_lines_sus>;
 
-	qcom,model = "alcatel-idol347";
-	qcom,audio-routing =
+	model = "alcatel-idol347";
+	audio-routing =
 		"AMIC1", "MIC BIAS External1",
 		"AMIC2", "MIC BIAS Internal2",
 		"AMIC3", "MIC BIAS External1";
 
-	internal-codec-playback-dai-link@0 {
-		link-name = "WCD";
+	dai-link-primary {
+		link-name = "Primary MI2S";
 		cpu {
 			sound-dai = <&lpass MI2S_PRIMARY>;
 		};
@@ -387,8 +387,8 @@
 		};
 	};
 
-	internal-codec-capture-dai-link@0 {
-		link-name = "WCD-Capture";
+	dai-link-tertiary {
+		link-name = "Tertiary MI2S";
 		cpu {
 			sound-dai = <&lpass MI2S_TERTIARY>;
 		};
@@ -397,8 +397,8 @@
 		};
 	};
 
-	external-dai-link@0 {
-		link-name = "Speaker";
+	dai-link-quaternary {
+		link-name = "Quaternary MI2S";
 		cpu {
 			sound-dai = <&lpass MI2S_QUATERNARY>;
 		};
