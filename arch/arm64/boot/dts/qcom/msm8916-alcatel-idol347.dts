@@ -170,26 +170,32 @@
 			       "0", "0", "1";
 	};
 
-	accelerometer@e {
+	accelerometer@f {
 		compatible = "kionix,kxtj21009";
-		reg = <0x0e>;
+		reg = <0x0f>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <31 IRQ_TYPE_EDGE_FALLING>;
 		mount-matrix = "-1", "0", "0",
 			       "0", "-1", "0",
 			       "0", "0", "-1";
 	};
 
-	gyroscope@68 {
-		compatible = "bosch,bmg160";
-		reg = <0x68>;
-		interrupt-parent = <&msmgpio>;
-		interrupts = <97 IRQ_TYPE_EDGE_RISING>; //need 98 too as in ds ?
-	};
-
 	alsps0@48 {
 		compatible = "sensortek,stk3310";
 		reg = <0x48>;
+		vdd-supply = <&pm8916_l17>;
+		vio-supply = <&pm8916_l6>;
 		interrupt-parent = <&msmgpio>;
 		interrupts = <12 IRQ_TYPE_EDGE_FALLING>;
+	};
+
+	gyroscope@68 {
+		compatible = "bosch,bmg160";
+		reg = <0x68>;
+		vdd-supply = <&pm8916_l17>;
+		vddio-supply = <&pm8916_l6>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <97 IRQ_TYPE_EDGE_RISING>; //need 98 too as in ds ?
 	};
 };
 
