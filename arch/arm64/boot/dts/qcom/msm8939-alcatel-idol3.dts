@@ -166,6 +166,14 @@
 
 &blsp_i2c4 {
 	status = "okay";
+
+	headphones: audio-codec@10 {
+		compatible = "asahi-kasei,ak4375";
+		reg = <0x10>;
+		pdn-gpios = <&msmgpio 101 GPIO_ACTIVE_HIGH>;
+		#sound-dai-cells = <0>;
+	};
+
 	battery@14 {
 		compatible = "qcom,smb1360";
 		reg = <0x14>;
@@ -648,6 +656,16 @@
 		};
 		codec {
 			sound-dai = <&lpass_codec 0>, <&wcd_codec 0>;
+		};
+	};
+
+	dai-link-secondary {
+		link-name = "Secondary MI2S";
+		cpu {
+			sound-dai = <&lpass MI2S_SECONDARY>;
+		};
+		codec {
+			sound-dai = <&headphones>;
 		};
 	};
 
