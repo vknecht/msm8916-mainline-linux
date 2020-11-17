@@ -134,6 +134,8 @@
 	accelerometer@e {
 		compatible = "kionix,kxtj21009";
 		reg = <0x0e>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <114 IRQ_TYPE_EDGE_FALLING>;
 		mount-matrix = "-1", "0", "0",
 			       "0", "-1", "0",
 			       "0", "0", "-1";
