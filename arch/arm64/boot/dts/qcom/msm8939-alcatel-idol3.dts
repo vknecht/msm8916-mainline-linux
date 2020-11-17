@@ -542,7 +542,7 @@
 	pinctrl-1 = <&mdss_sleep>;
 
 	panel@0 {
-		compatible = "mdss,r63315"; // "mdss,nt35596";
+		compatible = "alcatel,idol3-panel";
 		reg = <0>;
 
 		reset-gpios = <&msmgpio 25 GPIO_ACTIVE_HIGH>;
