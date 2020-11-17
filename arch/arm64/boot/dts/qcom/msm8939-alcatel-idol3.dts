@@ -274,7 +274,6 @@
 		pinctrl-0 = <&ts_int_active &ts_reset_active>;
 		interrupt-parent = <&msmgpio>;
 		interrupts = <13 0x2008>;
-		reset-gpios = <&msmgpio 12 GPIO_ACTIVE_LOW>;
 		#address-cells = <1>;
 		#size-cells = <0>;
 
