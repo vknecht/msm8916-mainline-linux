@@ -157,6 +157,8 @@
 	gyroscope@68 {
 		compatible = "bosch,bmg160";
 		reg = <0x68>;
+		vdd-supply = <&pm8916_l17>;
+		vddio-supply = <&pm8916_l6>;
 		interrupt-parent = <&msmgpio>;
 		interrupts = <23 IRQ_TYPE_EDGE_RISING>;
 	};
