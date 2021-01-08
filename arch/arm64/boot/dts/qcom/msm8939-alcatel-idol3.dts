@@ -170,6 +170,8 @@
 	headphones: audio-codec@10 {
 		compatible = "asahi-kasei,ak4375";
 		reg = <0x10>;
+		pinctrl-names = "default";
+		pintctrl-0 = <&pdn_active>;
 		pdn-gpios = <&msmgpio 101 GPIO_ACTIVE_HIGH>;
 		#sound-dai-cells = <0>;
 	};
@@ -315,6 +317,24 @@
 };
 
 &msmgpio {
+
+	pdn {
+		pdn_active: pdn-active {
+			pins = "gpio101";
+			function = "gpio";
+
+			drive-strength = <16>;
+			output-high;
+		};
+
+		pdn_suspend: pdn-suspend {
+			pins = "gpio101";
+			function = "gpio";
+
+			drive-strength = <2>;
+			output-low;
+		};
+	};
 
 	ts_pins: ts_pins {
 		ts_int_active: pmx_ts_int_active {
