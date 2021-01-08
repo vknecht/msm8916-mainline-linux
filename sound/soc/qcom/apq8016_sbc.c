@@ -30,6 +30,8 @@ struct apq8016_sbc_data {
 #define MIC_CTRL_QUA_WS_SLAVE_SEL_10	BIT(17)
 #define MIC_CTRL_TLMM_SCLK_EN		BIT(1)
 #define	SPKR_CTL_PRI_WS_SLAVE_SEL_11	(BIT(17) | BIT(16))
+#define SPKR_CTL_SEC_WS_SLAVE_SEL_10	(BIT(9) | BIT(8))
+#define SPKR_CTL_SEC_WS_SLAVE_SEL	BIT(8)
 #define SPKR_CTL_TLMM_MCLK_EN		BIT(1)
 #define SPKR_CTL_TLMM_SCLK_EN		BIT(2)
 #define SPKR_CTL_TLMM_DATA1_EN		BIT(3)
@@ -52,7 +54,8 @@ static int apq8016_sbc_dai_init(struct snd_soc_pcm_runtime *rtd)
 			pdata->spkr_iomux);
 		break;
 	case MI2S_SECONDARY:
-		writel(readl(pdata->spkr_iomux) | SPKR_CTL_TLMM_MCLK_EN |
+		writel(readl(pdata->spkr_iomux) | SPKR_CTL_SEC_WS_SLAVE_SEL_10 |
+			SPKR_CTL_TLMM_MCLK_EN |
 			SPKR_CTL_TLMM_SCLK_EN | SPKR_CTL_TLMM_DATA1_EN |
 			SPKR_CTL_TLMM_WS_OUT_SEL | SPKR_CTL_TLMM_WS_EN_SEL,
 			pdata->spkr_iomux);
