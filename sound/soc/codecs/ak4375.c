@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 
+/*
+ * Based on code by Hu Jin
+ * Copyright (C) 2014 Asahi Kasei Microdevices Corporation
+ */
 
 /* TODO: check includes */
 #include <linux/delay.h>
@@ -210,6 +214,8 @@ static int set_bickfs(struct snd_kcontrol *kcontrol,
 	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
 	ak4375->nBickFreq = ucontrol->value.enumerated.item[0];
 
+	dev_info(ak4375->dev, "set_bickfs()  nBickFreq=%d\n", ak4375->nBickFreq);
+
 	switch(ak4375->nBickFreq) {
 	case 0:
 		snd_soc_component_update_bits(component, AK4375_15_AUDIO_IF_FORMAT, 0x03, 0x01);
@@ -250,7 +256,16 @@ static int set_srcfs(struct snd_kcontrol *kcontrol,
 static int get_akpwdn(struct snd_kcontrol *kcontrol,
 		      struct snd_ctl_elem_value *ucontrol)
 {
-	/* TODO: uh ? should do better than downstream... */
+	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
+	int value = 0;
+
+	if (ak4375->pdn_gpiod) {
+		value = gpiod_get_value_cansleep(ak4375->pdn_gpiod);
+		ucontrol->value.enumerated.item[0] = value;
+		dev_info(ak4375->dev, "get_akpwdn = %d\n", value);
+	}
+
 	return 0;
 }
 
@@ -373,10 +388,9 @@ static int ak4375_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
 
-	dev_info(ak4375->dev, "ak4375_dac_event()\n");
-
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
+	dev_info(ak4375->dev, "ak4375_dac_event()  event=SND_SOC_DAPM_PRE_PMU\n");
 		snd_soc_component_update_bits(component, AK4375_00_POWER_MANAGEMENT1, 0x01, 0x01); //PMCP1=1
 		snd_soc_component_update_bits(component, AK4375_01_POWER_MANAGEMENT2, 0x01, 0x01); //PMCP1=1
 		mdelay(6); udelay(500);
@@ -384,13 +398,16 @@ static int ak4375_dac_event(struct snd_soc_dapm_widget *w,
 		mdelay(1);
 		break;
 	case SND_SOC_DAPM_POST_PMU:
+	dev_info(ak4375->dev, "ak4375_dac_event()  event=SND_SOC_DAPM_POST_PMU\n");
 		snd_soc_component_update_bits(component, AK4375_01_POWER_MANAGEMENT2, 0x02, 0x02); //PMCP2=1
 		mdelay(4); udelay(500);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
+	dev_info(ak4375->dev, "ak4375_dac_event()  event=SND_SOC_DAPM_PRE_PMD\n");
 		snd_soc_component_update_bits(component, AK4375_01_POWER_MANAGEMENT2, 0x02, 0x00); //PMCP2=0
 		break;
 	case SND_SOC_DAPM_POST_PMD:
+	dev_info(ak4375->dev, "ak4375_dac_event()  event=SND_SOC_DAPM_POST_PMD\n");
 		snd_soc_component_update_bits(component, AK4375_01_POWER_MANAGEMENT2, 0x30, 0x00); //PMLDO1P/N=0
 		snd_soc_component_update_bits(component, AK4375_01_POWER_MANAGEMENT2, 0x01, 0x00); //PMCP1=0
 		snd_soc_component_update_bits(component, AK4375_00_POWER_MANAGEMENT1, 0x01, 0x00); //PMCP1=1
@@ -783,6 +800,22 @@ static int ak4375_hw_params(struct snd_pcm_substream *substream,
 	return 0;
 }
 
+static int ak4375_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
+				 unsigned int freq, int dir)
+{
+	struct snd_soc_component *component = dai->component;
+	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
+
+	dev_info(ak4375->dev, "ak4375_set_dai_sysclk() clk_id=%d  freq=%d  dir=%d\n", clk_id, freq, dir);
+
+	ak4375->rclk = freq;
+
+	if (ak4375->nPllMode == 0)
+		ak4375_set_mcki(component, ak4375->fs1, freq);
+
+	return 0;
+}
+
 static int ak4375_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
 	struct snd_soc_component *component = dai->component;
@@ -806,22 +839,6 @@ static int ak4375_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	}
 
 	snd_soc_component_write(component, AK4375_15_AUDIO_IF_FORMAT, format);
-
-	return 0;
-}
-
-static int ak4375_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
-				 unsigned int freq, int dir)
-{
-	struct snd_soc_component *component = dai->component;
-	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
-
-	dev_info(ak4375->dev, "ak4375_set_dai_sysclk() clk_id=%d  freq=%d  dir=%d\n", clk_id, freq, dir);
-
-	ak4375->rclk = freq;
-
-	if (ak4375->nPllMode == 0)
-		ak4375_set_mcki(component, ak4375->fs1, freq);
 
 	return 0;
 }
@@ -869,6 +886,29 @@ static int ak4375_set_dai_mute(struct snd_soc_dai *dai, int mute, int direction)
 	return ret;
 };
 
+static int ak4375_set_bias_level(struct snd_soc_component *component,
+				 enum snd_soc_bias_level level)
+{
+	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
+
+	switch (level) {
+	case SND_SOC_BIAS_ON:
+		dev_info(ak4375->dev, "ak4375_set_bias_level()  level=SND_SOC_BIAS_ON\n");
+		break;
+	case SND_SOC_BIAS_PREPARE:
+		dev_info(ak4375->dev, "ak4375_set_bias_level()  level=SND_SOC_BIAS_PREPARE\n");
+		break;
+	case SND_SOC_BIAS_STANDBY:
+		dev_info(ak4375->dev, "ak4375_set_bias_level()  level=SND_SOC_BIAS_STANDBY\n");
+		break;
+	case SND_SOC_BIAS_OFF:
+		dev_info(ak4375->dev, "ak4375_set_bias_level()  level=SND_SOC_BIAS_OFF\n");
+		break;
+	}
+
+	return 0;
+}
+
 #define AK4375_FORMATS	(SNDRV_PCM_FMTBIT_S16_LE |\
 			 SNDRV_PCM_FMTBIT_S24_LE |\
 			 SNDRV_PCM_FMTBIT_S32_LE)
@@ -887,7 +927,11 @@ static const struct snd_pcm_hw_constraint_list ak4375_rate_constraints = {
 static int ak4375_startup(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = dai->component;
+	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
 	int ret;
+
+	dev_info(ak4375->dev, "ak4375_startup()\n");
 
 	ret = snd_pcm_hw_constraint_list(substream->runtime, 0,
 					 SNDRV_PCM_HW_PARAM_RATE,
@@ -951,7 +995,7 @@ static int ak4375_probe(struct snd_soc_component *component)
 	ak4375->nSmt = 0;
 	ak4375->dfsrc8fs = 0;
 
-	return 0; //ak4375_init(component);
+	return 0;
 }
 
 static void ak4375_remove(struct snd_soc_component *component)
@@ -996,6 +1040,7 @@ static int __maybe_unused ak4375_runtime_resume(struct device *dev)
 static const struct snd_soc_component_driver soc_codec_dev_ak4375 = {
 	.probe			= ak4375_probe,
 	.remove			= ak4375_remove,
+	.set_bias_level		= ak4375_set_bias_level,
 	.controls		= ak4375_snd_controls,
 	.num_controls		= ARRAY_SIZE(ak4375_snd_controls),
 	.dapm_widgets		= ak4375_dapm_widgets,
@@ -1053,6 +1098,7 @@ static int ak4375_i2c_probe(struct i2c_client *i2c)
 	if (IS_ERR(ak4375->pdn_gpiod))
 		return PTR_ERR(ak4375->pdn_gpiod);
 
+	ak4375_power_off(ak4375);
 	ak4375_power_on(ak4375);
 
 	ret = regmap_read(ak4375->regmap, AK4375_15_AUDIO_IF_FORMAT, &deviceid);
@@ -1097,7 +1143,7 @@ static int ak4375_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	pm_runtime_enable(&i2c->dev);
+	//pm_runtime_enable(&i2c->dev);
 
 	return 0;
 }
@@ -1105,7 +1151,7 @@ static int ak4375_i2c_probe(struct i2c_client *i2c)
 static int ak4375_i2c_remove(struct i2c_client *i2c)
 {
 	dev_info(&i2c->dev, "i2c_remove\n");
-	pm_runtime_disable(&i2c->dev);
+	//pm_runtime_disable(&i2c->dev);
 
 	return 0;
 }
