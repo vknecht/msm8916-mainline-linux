@@ -1169,7 +1169,7 @@
 		};
 
 		camss: camss@1b00000 {
-			compatible = "qcom,msm8939-camss";
+			compatible = "qcom,msm8916-camss";
 			reg = <0x01b0ac00 0x200>,
 				<0x01b00030 0x4>,
 				<0x01b0b000 0x200>,
