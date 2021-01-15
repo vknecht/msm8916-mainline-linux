@@ -1,0 +1,257 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: "http://devicetree.org/schemas/power/supply/smb1360.yaml#"
+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+
+title: Qualcomm SMB1360 charger and fuel gauge
+
+maintainers:
+  - Jonathan Albrieux <jonathan.albrieux@gmail.com>
+
+description: |
+  Port for Qualcomm SMB1360 charger and fuel gauge downstream driver.
+
+  A brief overview of the chip can be found at:
+    https://www.qualcomm.com/products/quick-charge-10
+
+  Original code can be found at:
+    https://github.com/msm8916-mainline/android_kernel_qcom_msm8916/blob/master/drivers/power/smb1360-charger-fg.c
+
+properties:
+  compatible:
+    enum:
+      - qcom,smb1360
+
+  reg:
+    description: I2C address of the charger.
+
+  interrupts:
+    description:
+      IRQ number of the GPIO connected to the STAT pin.
+
+  io-channels:
+    description:
+      Specify the IIO ADC channels to get battery id.
+
+  io-channel-names:
+    description:
+      Channel name used to get the battery id.
+
+  qcom,fg-batt-capacity-mah:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      The new battery capacity to be supported.
+      This updates the ACTUAL and NOMINAL CAPACITY of the profile.
+
+  qcom,fg-cutoff-voltage-mv:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      This is the minimum allowed system voltage. The FG will report
+      SOC = 0 at this volatge. This value is in mV.
+
+  qcom,fg-ibatt-standby-ma:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      This is the minimum current value for the SOC to be above 0% at
+      the cutoff voltage. This value is in mA.
+
+  qcom,fg-cc-to-cv-mv:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      This is the voltage at which the FG transitions from CC to CV.
+      This value should never be higher than the float voltage. This
+      value is in mV.
+
+  qcom,thermistor-c1-coeff:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      This is the NTC thermistor C1 coeff for the thermistor inside
+      the battery. This value is 16-bit float encoded value determined from the
+      NTC-c1_coeff mapping.
+
+  qcom,fg-auto-recharge-soc:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      Defines the auto recharging SOC threshold.
+
+  qcom,fg-iterm-ma:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      This is termination current at which the Monotonic SOC reports 100.
+      The value passed here is negated in the driver (assuming that the iterm
+      is always -ve). This value is in mA.
+
+  qcom,float-voltage-mv:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      The maximum voltage up to which the battery is charged.
+      This value is in mV.
+
+  qcom,charging-timeout:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      Maximum duration in minutes that a single charge cycle may last.
+      Supported values are 0, 192, 384, 768, and 1536. A value of 0 means that
+      no charge cycle timeout is used and charging can continue indefinitely.
+
+  qcom,recharge-thresh-mv:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      Specifies the minimum voltage drop in millivolts below the float voltage
+      that is required in order to initiate a new charging cycle.
+      Supported values are 50, 100, 200 and 300mV.
+
+  qcom,iterm-ma:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      Specifies the termination current to indicate end-of-charge.
+      Possible values in 25, 50, 75, 100, 125, 150, 175 and 200mA
+
+  qcom,chg-inhibit-disabled:
+    type: boolean
+    description:
+      Disables the charger-inhibit function.
+
+  qcom,shdn-after-pwroff:
+    type: boolean
+    description:
+      Configure smb1360 for shutdown at power-off.
+
+  qcom,fg-reset-at-pon:
+    type: boolean
+    description:
+      Indicates if the FG reset at power-on is enabled.
+
+  qcom,fg-reset-threshold-mv:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      Indicates the volatge threshold to reset the FG. It is compared against
+      the difference between in predicted voltage and current voltage.
+      If this value is not specified a default value of 50mV is used.
+      Unit is in milli-volts.
+
+  qcom,batt-profile-select:
+    type: boolean
+    description:
+      Indicates battery-profile selection is enabled.
+
+  qcom,batt-id-vref-uv:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      The reference voltage on the battery-ID line specified in micro-volts.
+
+  qcom,batt-id-rpullup-kohm:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      The pull-up resistor connected on the battery-ID (vref) line.
+
+  qcom,profile-a-rid-kohm:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      The battery-ID resistor (RID) in Kohm supported by profile-A of SMB1360.
+      This should be specified if 'batt-profile-select' is defined.
+
+  qcom,profile-b-rid-kohm:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      The battery-ID resistor (RID) in Kohm supported by profile-B of SMB1360.
+      This should be specified if 'batt-profile-select' is defined.
+
+  qcom,rsense-10mhom:
+    type: boolean
+    description:
+      Indicates the Rsense resistor configuration.
+      If set, the Rsense is 10mOhm else its 20mOhm.
+
+  qcom,otp-hard-jeita-config:
+    type: boolean
+    description:
+      Indicates if cold and hot thresholds need be modified.
+      If it's not defined, default temp thresholds [0, 55] will be used.
+
+  qcom,otp-hot-bat-decidegc:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      Hot battery temperature in decidegC.
+
+  qcom,otp-cold-bat-decidegc:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      Cold battery temperature in decidegC.
+
+  qcom,otg-batt-curr-limit:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description:
+      This property defines the current threshold draw
+      from battery when device working at OTG mode.
+      The possible values are 350, 550, 950, 1500mA.
+
+  usb_otg_vbus:
+    description: Regulator controlling USB OTG VBUS.
+
+dependencies:
+  qcom,otp-hard-jeita-config: [ 'qcom,otp-hot-bat-decidegc', 'qcom,otp-cold-bat-decidegc' ]
+  qcom,otp-hot-bat-decidegc: [ 'qcom,otp-hard-jeita-config' ]
+  qcom,otp-cold-bat-decidegc: [ 'qcom,otp-hard-jeita-config' ]
+
+required:
+  - compatible
+  - reg
+
+additionalProperties: true
+
+examples:
+  - |
+    #include <dt-bindings/interrupt-controller/irq.h>
+    #include <dt-bindings/iio/qcom,spmi-vadc.h>
+
+    i2c {
+      #address-cells = <1>;
+      #size-cells = <0>;
+
+      charger: battery@14 {
+        compatible = "qcom,smb1360";
+        reg = <0x14>;
+
+        interrupt-parent = <&msmgpio>;
+        interrupts = <62 IRQ_TYPE_LEVEL_LOW>;
+
+        io-channels = <&pm8916_vadc VADC_LR_MUX2_BAT_ID>;
+        io-channel-names = "batt-id";
+
+        pinctrl-names = "default";
+        pinctrl-0 = <&smb_int_default>;
+
+        qcom,fg-batt-capacity-mah = <2810>;
+        qcom,fg-cutoff-voltage-mv = <3400>;
+        qcom,fg-ibatt-standby-ma = <200>;
+        qcom,fg-cc-to-cv-mv = <4397>;
+        qcom,fg-iterm-ma = <100>;
+        qcom,thermistor-c1-coeff = <0x86C2>;
+        qcom,fg-auto-recharge-soc = <97>;
+        qcom,float-voltage-mv = <4400>;
+        qcom,charging-timeout = <768>;
+        qcom,recharge-thresh-mv = <50>;
+        qcom,iterm-ma = <100>;
+        qcom,chg-inhibit-disabled;
+
+        qcom,shdn-after-pwroff;
+        qcom,fg-reset-at-pon;
+        qcom,fg-reset-threshold-mv = <200>;
+
+        qcom,batt-profile-select;
+        qcom,batt-id-vref-uv = <1800000>;
+        qcom,batt-id-rpullup-kohm = <100>;
+        qcom,profile-a-rid-kohm = <100>;
+        qcom,profile-b-rid-kohm = <200>;
+        qcom,rsense-10mhom;
+
+        qcom,otp-hard-jeita-config;
+        qcom,otp-hot-bat-decidegc = <500>;
+        qcom,otp-cold-bat-decidegc = <(-50)>;
+
+        qcom,otg-batt-curr-limit = <1500>;
+        usb_otg_vbus: usb-otg-vbus {};
+      };
+    };
