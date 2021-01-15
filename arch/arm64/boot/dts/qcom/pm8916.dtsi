@@ -81,11 +81,6 @@
 			adc-chan@f {
 				reg = <VADC_VDD_VADC>;
 			};
-			bat_id {
-				reg = <VADC_LR_MUX2_BAT_ID>;
-				qcom,hw-settle-time = <2000>;
-				qcom,ratiometric;
-			};
 		};
 
 		rtc@6000 {
