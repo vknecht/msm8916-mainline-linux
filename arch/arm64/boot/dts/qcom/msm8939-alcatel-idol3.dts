@@ -7,6 +7,7 @@
 #include "arm/qcom-msm8939-no-psci.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
+#include <dt-bindings/iio/qcom,spmi-vadc.h>
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/pinctrl/qcom,pmic-mpp.h>
 #include <dt-bindings/sound/apq8016-lpass.h>
@@ -113,7 +114,6 @@
 		id-gpio = <&msmgpio 69 GPIO_ACTIVE_HIGH>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&usb_id_default &usb_id_switch_default>;
-		vbus-supply = <&usb_otg_vbus>;
 	};
 };
 
@@ -176,17 +176,25 @@
 		#sound-dai-cells = <0>;
 	};
 
-	battery@14 {
+	charger: battery@14 {
 		compatible = "qcom,smb1360";
 		reg = <0x14>;
 		interrupt-parent = <&msmgpio>;
-		interrupts = <62 IRQ_TYPE_EDGE_FALLING>;
+		interrupts = <62 IRQ_TYPE_LEVEL_LOW>;
 		io-channels = <&pm8916_vadc VADC_LR_MUX2_BAT_ID>;
 		io-channel-names = "batt-id";
 		pinctrl-names = "default";
 		pinctrl-0 = <&smb_int_default>;
+
+		qcom,fg-batt-capacity-mah = <2910>;
+		qcom,fg-cutoff-voltage-mv = <3400>;
+		qcom,fg-cc-to-cv-mv = <4328>;
+		qcom,fg-cc-soc-coeff = <0x81A1>;
+		qcom,fg-iterm-ma = <100>;
+		qcom,thermistor-c1-coeff = <0x86C8>;
+		qcom,fg-auto-recharge-soc = <99>;
 		qcom,float-voltage-mv = <4350>;
-		qcom,charging-timeout = <0>;
+		qcom,charging-timeout = <0>;	/* was set to 0 "temporarily" in DS :-/ */
 		qcom,recharge-thresh-mv = <100>;
 		qcom,iterm-ma = <100>;
 		qcom,chg-inhibit-disabled;
@@ -198,7 +206,7 @@
 		qcom,batt-id-rpullup-kohm = <100>;
 		qcom,profile-a-rid-kohm = <33>;
 		qcom,profile-b-rid-kohm = <52>;
-
+		qcom,otg-batt-curr-limit = <1500>;
 		usb_otg_vbus: usb-otg-vbus {};
 	};
 
@@ -712,11 +720,12 @@
 
 &usb {
 	status = "okay";
-	extcon = <&usb_id>, <&usb_id>;
+	extcon = <&charger>, <&usb_id>;
+	vbus-supply = <&usb_otg_vbus>;
 };
 
 &usb_hs_phy {
-	extcon = <&usb_id>;
+	extcon = <&charger>;
 	v1p8-supply = <&pm8916_l7>;
 	v3p3-supply = <&pm8916_l13>;
 };
