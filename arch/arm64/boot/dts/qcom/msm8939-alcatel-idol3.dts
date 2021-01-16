@@ -194,7 +194,7 @@
 		qcom,thermistor-c1-coeff = <0x86C8>;
 		qcom,fg-auto-recharge-soc = <99>;
 		qcom,float-voltage-mv = <4350>;
-		qcom,charging-timeout = <0>;	/* was set to 0 "temporarily" in DS :-/ */
+		qcom,charging-timeout = <192>;
 		qcom,recharge-thresh-mv = <100>;
 		qcom,iterm-ma = <100>;
 		qcom,chg-inhibit-disabled;
