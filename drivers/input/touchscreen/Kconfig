@@ -1344,4 +1344,16 @@ config TOUCHSCREEN_HIMAX852X
 		To compile this driver as a module, choose M here: the
 		module will be called himax_852xES.
 
+config TOUCHSCREEN_MSG26XX
+	tristate "MStar msg26xx touchscreen support"
+	depends on I2C
+	depends on GPIOLIB || COMPILE_TEST
+	help
+	  Say Y here if you have an I2C touchscreen using MStar msg26xx.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called msg26xx.
+
 endif
