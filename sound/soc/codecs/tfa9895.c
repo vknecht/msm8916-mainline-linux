@@ -7,6 +7,7 @@
 #include <linux/i2c.h>
 #include <linux/module.h>
 #include <linux/regmap.h>
+#include <linux/regulator/consumer.h>
 #include <sound/soc.h>
 
 #define TFA98XX_STATUSREG		0x00
@@ -41,6 +42,12 @@
 
 #define TFA9895_REVISION		0x12
 #define TFA9897_REVISION		0xb97
+
+struct tfa9895_priv {
+	struct i2c_client	*client;
+	struct regmap		*regmap;
+	struct regulator	*vdd;
+};
 
 static int tfa9895_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
@@ -163,18 +170,35 @@ static int tfa9895_dsp_bypass(struct regmap *regmap)
 static int tfa9895_i2c_probe(struct i2c_client *i2c)
 {
 	struct device *dev = &i2c->dev;
-	struct regmap *regmap;
+	struct tfa9895_priv *tfa9895;
 	unsigned int val;
 	int ret;
 
-	regmap = devm_regmap_init_i2c(i2c, &tfa9895_regmap);
-	if (IS_ERR(regmap))
-		return PTR_ERR(regmap);
+	tfa9895 = devm_kzalloc(dev, sizeof(*tfa9895), GFP_KERNEL);
+	if (!tfa9895)
+		return -ENOMEM;
+
+	tfa9895->vdd = devm_regulator_get(dev, "vdd");
+	if (IS_ERR(tfa9895->vdd)) {
+		if (PTR_ERR(tfa9895->vdd) == -EPROBE_DEFER)
+			return -EPROBE_DEFER;
+		tfa9895->vdd = NULL;
+	}
+
+	ret = regulator_enable(tfa9895->vdd);
+	if (ret) {
+		dev_err(dev, "Failed to enable vdd regulator\n");
+		return ret;
+	}
+
+	tfa9895->regmap = devm_regmap_init_i2c(i2c, &tfa9895_regmap);
+	if (IS_ERR(tfa9895->regmap))
+		return PTR_ERR(tfa9895->regmap);
 
 	/* Dummy read to generate i2c clocks, required on some devices */
-	regmap_read(regmap, TFA98XX_REVISIONNUMBER, &val);
+	regmap_read(tfa9895->regmap, TFA98XX_REVISIONNUMBER, &val);
 
-	ret = regmap_read(regmap, TFA98XX_REVISIONNUMBER, &val);
+	ret = regmap_read(tfa9895->regmap, TFA98XX_REVISIONNUMBER, &val);
 	if (ret) {
 		dev_err(dev, "failed to read revision number: %d\n", ret);
 		return ret;
@@ -183,7 +207,7 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 	switch (val) {
 	case TFA9895_REVISION:
 		dev_dbg(dev, "found TFA9895\n");
-		ret = regmap_multi_reg_write(regmap, tfa9895_reg_init,
+		ret = regmap_multi_reg_write(tfa9895->regmap, tfa9895_reg_init,
 					     ARRAY_SIZE(tfa9895_reg_init));
 		if (ret) {
 			dev_err(dev, "failed to initialize registers: %d\n", ret);
@@ -192,19 +216,19 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 		break;
 	case TFA9897_REVISION:
 		dev_dbg(dev, "found TFA9897\n");
-		ret = regmap_write(regmap, TFA98XX_CURRENTSENSE3, 0x0300);
+		ret = regmap_write(tfa9895->regmap, TFA98XX_CURRENTSENSE3, 0x0300);
 		if (ret) {
 			dev_err(dev, "tfa9897: Failed to set TFA98XX_CURRENTSENSE3\n");
 			return ret;
 		}
 
-		ret = regmap_update_bits(regmap, TFA98XX_CURRENTSENSE4, 0x1, 0x0);
+		ret = regmap_update_bits(tfa9895->regmap, TFA98XX_CURRENTSENSE4, 0x1, 0x0);
 		if (ret) {
 			dev_err(dev, "tfa9897: Failed to set TFA98XX_CURRENTSENSE4\n");
 			return ret;
 		}
 
-		ret = regmap_write(regmap, 0x14, 0x0);
+		ret = regmap_write(tfa9895->regmap, 0x14, 0x0);
 		if (ret) {
 			dev_err(dev, "tfa9897: Failed to set 0x14 register\n");
 			return ret;
@@ -215,14 +239,31 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 		return -EINVAL;
 	}
 
-	ret = tfa9895_dsp_bypass(regmap);
+	ret = tfa9895_dsp_bypass(tfa9895->regmap);
 	if (ret) {
 		dev_err(dev, "failed to enable dsp bypass: %d\n", ret);
 		return ret;
 	}
 
+	tfa9895->client = i2c;
+	i2c_set_clientdata(i2c, tfa9895);
+
 	return devm_snd_soc_register_component(dev, &tfa9895_component,
 					       &tfa9895_dai, 1);
+}
+
+static int tfa9895_i2c_remove(struct i2c_client *i2c)
+{
+	struct tfa9895_priv *tfa9895 = i2c_get_clientdata(i2c);
+	int ret;
+
+	ret = regulator_disable(tfa9895->vdd);
+	if (ret != 0) {
+		dev_err(&i2c->dev, "Failed to disable supply: %d\n", ret);
+		return ret;
+	}
+
+	return 0;
 }
 
 static const struct of_device_id tfa9895_of_match[] = {
@@ -238,6 +279,7 @@ static struct i2c_driver tfa9895_i2c_driver = {
 		.of_match_table = tfa9895_of_match,
 	},
 	.probe_new = tfa9895_i2c_probe,
+	.remove = tfa9895_i2c_remove,
 };
 module_i2c_driver(tfa9895_i2c_driver);
 
