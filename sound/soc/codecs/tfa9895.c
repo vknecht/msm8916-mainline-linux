@@ -4,6 +4,7 @@
  * Copyright (C) 2014-2020 NXP Semiconductors, All Rights Reserved.
  */
 
+#include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
 #include <linux/module.h>
 #include <linux/regmap.h>
@@ -47,6 +48,7 @@ struct tfa9895_priv {
 	struct i2c_client	*client;
 	struct regmap		*regmap;
 	struct regulator	*vdd;
+	struct gpio_desc	*reset_gpiod;
 };
 
 static int tfa9895_hw_params(struct snd_pcm_substream *substream,
@@ -189,6 +191,16 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 	if (ret) {
 		dev_err(dev, "Failed to enable vdd regulator\n");
 		return ret;
+	}
+
+	tfa9895->reset_gpiod = devm_gpiod_get_optional(dev, "reset", GPIOD_IN);
+	if (IS_ERR(tfa9895->reset_gpiod))
+		return PTR_ERR(tfa9895->reset_gpiod);
+
+	if (tfa9895->reset_gpiod) {
+		gpiod_set_value_cansleep(tfa9895->reset_gpiod, 1);
+		usleep_range(5000, 6000);
+		gpiod_set_value_cansleep(tfa9895->reset_gpiod, 0);
 	}
 
 	tfa9895->regmap = devm_regmap_init_i2c(i2c, &tfa9895_regmap);
