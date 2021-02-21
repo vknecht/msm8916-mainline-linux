@@ -49,6 +49,7 @@ struct tfa9895_priv {
 	struct regmap		*regmap;
 	struct regulator	*vdd;
 	struct gpio_desc	*reset_gpiod;
+	int			power_state;
 };
 
 static int tfa9895_hw_params(struct snd_pcm_substream *substream,
@@ -169,6 +170,66 @@ static int tfa9895_dsp_bypass(struct regmap *regmap)
 				  0);
 }
 
+static const char * const power_text[] = { "Off", "On" };
+static const struct soc_enum power_enum = SOC_ENUM_SINGLE_EXT(2, power_text);
+
+int get_power(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct tfa9895_priv *tfa9895 = snd_soc_component_get_drvdata(component);
+	ucontrol->value.integer.value[0] = tfa9895->power_state;
+
+	return 0;
+}
+
+int put_power(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct tfa9895_priv *tfa9895 = snd_soc_component_get_drvdata(component);
+	int state = ucontrol->value.enumerated.item[0];
+
+	regmap_update_bits(tfa9895->regmap, TFA98XX_SYS_CTRL, (1 << 3), (state << 3));
+
+	tfa9895->power_state = state;
+
+	return 0;
+}
+
+static const struct snd_kcontrol_new tfa9897_controls[] = {
+	SOC_ENUM_EXT("Power Switch", power_enum, get_power, put_power),
+};
+
+static const struct snd_soc_component_driver tfa9897_component = {
+	.controls		= tfa9897_controls,
+	.num_controls		= ARRAY_SIZE(tfa9897_controls),
+	.dapm_widgets		= tfa9895_dapm_widgets,
+	.num_dapm_widgets	= ARRAY_SIZE(tfa9895_dapm_widgets),
+	.dapm_routes		= tfa9895_dapm_routes,
+	.num_dapm_routes	= ARRAY_SIZE(tfa9895_dapm_routes),
+	.idle_bias_on		= 1,
+	.use_pmdown_time	= 1,
+	.endianness		= 1,
+	.non_legacy_dai_naming	= 1,
+};
+
+static const struct snd_soc_dai_ops tfa9897_dai_ops = {
+	.hw_params = tfa9895_hw_params,
+};
+
+static struct snd_soc_dai_driver tfa9897_dai = {
+	.name = "tfa9897-hifi",
+	.playback = {
+		.stream_name	= "HiFi Playback",
+		.formats	= SNDRV_PCM_FMTBIT_S16_LE,
+		.rates		= SNDRV_PCM_RATE_8000_48000,
+		.rate_min	= 8000,
+		.rate_max	= 48000,
+		.channels_min	= 1,
+		.channels_max	= 2,
+	},
+	.ops = &tfa9897_dai_ops,
+};
+
 static int tfa9895_i2c_probe(struct i2c_client *i2c)
 {
 	struct device *dev = &i2c->dev;
@@ -260,8 +321,14 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 	tfa9895->client = i2c;
 	i2c_set_clientdata(i2c, tfa9895);
 
-	return devm_snd_soc_register_component(dev, &tfa9895_component,
-					       &tfa9895_dai, 1);
+	switch (val) {
+	case TFA9895_REVISION:
+		return devm_snd_soc_register_component(dev, &tfa9895_component, &tfa9895_dai, 1);
+	case TFA9897_REVISION:
+		return devm_snd_soc_register_component(dev, &tfa9897_component, &tfa9897_dai, 1);
+	}
+
+	return -EINVAL;
 }
 
 static int tfa9895_i2c_remove(struct i2c_client *i2c)
