@@ -20,6 +20,8 @@
 #define TFA98XX_SPKR_CALIBRATION	0x08
 #define TFA98XX_SYS_CTRL		0x09
 #define TFA98XX_I2S_SEL_REG		0x0a
+#define TFA98XX_CURRENTSENSE3		0x48
+#define TFA98XX_CURRENTSENSE4		0x49
 
 #define TFA98XX_I2SREG_CHSA		(0x3 << 6)
 #define TFA98XX_I2SREG_I2SSR_SHIFT	12
@@ -38,6 +40,7 @@
 #define TFA98XX_SYS_CTRL_AMPC		(0x1 << 6)
 
 #define TFA9895_REVISION		0x12
+#define TFA9897_REVISION		0xb97
 
 static int tfa9895_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
@@ -138,7 +141,7 @@ static const struct reg_sequence tfa9895_reg_init[] = {
 	/* TFA98XX_SYSCTRL_DCA = 0 */
 	{ TFA98XX_SYS_CTRL, 0x024d },
 	{ 0x41, 0x0308 },
-	{ 0x49, 0x0e82 },
+	{ TFA98XX_CURRENTSENSE4, 0x0e82 },
 };
 
 static int tfa9895_dsp_bypass(struct regmap *regmap)
@@ -177,17 +180,39 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	if (val != TFA9895_REVISION) {
-		dev_err(dev, "invalid revision number, expected %#x, got %#x\n",
-			TFA9895_REVISION, val);
-		return -EINVAL;
-	}
+	switch (val) {
+	case TFA9895_REVISION:
+		dev_dbg(dev, "found TFA9895\n");
+		ret = regmap_multi_reg_write(regmap, tfa9895_reg_init,
+					     ARRAY_SIZE(tfa9895_reg_init));
+		if (ret) {
+			dev_err(dev, "failed to initialize registers: %d\n", ret);
+			return ret;
+		}
+		break;
+	case TFA9897_REVISION:
+		dev_dbg(dev, "found TFA9897\n");
+		ret = regmap_write(regmap, TFA98XX_CURRENTSENSE3, 0x0300);
+		if (ret) {
+			dev_err(dev, "tfa9897: Failed to set TFA98XX_CURRENTSENSE3\n");
+			return ret;
+		}
 
-	ret = regmap_multi_reg_write(regmap, tfa9895_reg_init,
-				     ARRAY_SIZE(tfa9895_reg_init));
-	if (ret) {
-		dev_err(dev, "failed to initialize registers: %d\n", ret);
-		return ret;
+		ret = regmap_update_bits(regmap, TFA98XX_CURRENTSENSE4, 0x1, 0x0);
+		if (ret) {
+			dev_err(dev, "tfa9897: Failed to set TFA98XX_CURRENTSENSE4\n");
+			return ret;
+		}
+
+		ret = regmap_write(regmap, 0x14, 0x0);
+		if (ret) {
+			dev_err(dev, "tfa9897: Failed to set 0x14 register\n");
+			return ret;
+		}
+		break;
+	default:
+		dev_err(dev, "invalid revision number %#x\n", val);
+		return -EINVAL;
 	}
 
 	ret = tfa9895_dsp_bypass(regmap);
@@ -202,6 +227,7 @@ static int tfa9895_i2c_probe(struct i2c_client *i2c)
 
 static const struct of_device_id tfa9895_of_match[] = {
 	{ .compatible = "nxp,tfa9895", },
+	{ .compatible = "nxp,tfa9897", },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, tfa9895_of_match);
