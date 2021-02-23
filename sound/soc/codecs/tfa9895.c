@@ -49,6 +49,7 @@ struct tfa9895_priv {
 	struct regmap		*regmap;
 	struct regulator	*vdd;
 	struct gpio_desc	*reset_gpiod;
+	int			channel_state;
 	int			power_state;
 };
 
@@ -170,8 +171,32 @@ static int tfa9895_dsp_bypass(struct regmap *regmap)
 				  0);
 }
 
+static const char * const channel_text[] = { "Left", "Right" };
 static const char * const power_text[] = { "Off", "On" };
+static const struct soc_enum channel_enum = SOC_ENUM_SINGLE_EXT(2, channel_text);
 static const struct soc_enum power_enum = SOC_ENUM_SINGLE_EXT(2, power_text);
+
+int get_channel(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct tfa9895_priv *tfa9895 = snd_soc_component_get_drvdata(component);
+	ucontrol->value.integer.value[0] = tfa9895->channel_state;
+
+	return 0;
+}
+
+int put_channel(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct tfa9895_priv *tfa9895 = snd_soc_component_get_drvdata(component);
+	int channel = ucontrol->value.enumerated.item[0];
+
+	regmap_update_bits(tfa9895->regmap, TFA98XX_I2SREG, TFA98XX_I2SREG_CHSA, (channel << 6));
+
+	tfa9895->channel_state = channel;
+
+	return 0;
+}
 
 int get_power(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
@@ -196,6 +221,7 @@ int put_power(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol
 }
 
 static const struct snd_kcontrol_new tfa9897_controls[] = {
+	SOC_ENUM_EXT("Channel", channel_enum, get_channel, put_channel),
 	SOC_ENUM_EXT("Power Switch", power_enum, get_power, put_power),
 };
 
