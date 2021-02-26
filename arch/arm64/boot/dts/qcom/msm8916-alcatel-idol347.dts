@@ -149,6 +149,17 @@
 &blsp_i2c3 {
 	status = "okay";
 
+	headphones: audio-codec@10 {
+		compatible = "asahi-kasei,ak4375";
+		reg = <0x10>;
+		vdd-supply = <&pm8916_l6>;
+		pdn-gpios = <&msmgpio 114 GPIO_ACTIVE_HIGH>;
+		ldo-gpios = <&msmgpio 121 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&headphones_pdn_default &headphones_ldo_default>;
+		#sound-dai-cells = <0>;
+	};
+
 	speaker_codec_top: audio-codec@34 {
 		compatible = "nxp,tfa9897";
 		reg = <0x34>;
@@ -343,8 +354,8 @@
 	status = "okay";
 
 	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&cdc_pdm_lines_act &ext_sec_tlmm_lines_act>;
-	pinctrl-1 = <&cdc_pdm_lines_sus &ext_sec_tlmm_lines_sus>;
+	pinctrl-0 = <&cdc_pdm_lines_act &ext_mclk_tlmm_lines_act &ext_pri_tlmm_lines_act &ext_pri_ws_act &ext_sec_tlmm_lines_act>;
+	pinctrl-1 = <&cdc_pdm_lines_sus &ext_mclk_tlmm_lines_sus &ext_pri_tlmm_lines_sus &ext_pri_ws_sus &ext_sec_tlmm_lines_sus>;
 
 	model = "alcatel-idol3";
 	audio-routing =
@@ -357,6 +368,16 @@
 		link-name = "Primary MI2S";
 		cpu {
 			sound-dai = <&lpass MI2S_PRIMARY>;
+		};
+	};
+
+	dai-link-secondary {
+		link-name = "Secondary MI2S";
+		cpu {
+			sound-dai = <&lpass MI2S_SECONDARY>;
+		};
+		codec {
+			sound-dai = <&headphones>;
 		};
 	};
 
@@ -511,6 +532,44 @@
 		bias-disable;
 	};
 
+        ext-mclk-tlmm-lines {
+                ext_mclk_tlmm_lines_act: mclk-lines-on {
+                        pins = "gpio116";
+                        function = "gpio";
+
+                        drive-strength = <2>;
+                        //bias-disable;
+			bias-pull-down;
+			output-low;
+                };
+                ext_mclk_tlmm_lines_sus: mclk-lines-off {
+                        pins = "gpio116";
+                        function = "gpio";
+
+                        drive-strength = <2>;
+                        //bias-disable;
+			bias-pull-down;
+			output-low;
+                };
+        };
+
+	ext-pri-tlmm-lines {
+		ext_pri_tlmm_lines_act: ext-pa-on {
+			pins = "gpio113", "gpio115";
+			function = "pri_mi2s";
+
+			drive-strength = <8>;
+			bias-disable;
+		};
+		ext_pri_tlmm_lines_sus: ext-pa-off {
+			pins = "gpio113", "gpio115";
+			function = "pri_mi2s";
+
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
 	gpio_keys_default: gpio-keys-default {
 		pins = "gpio107";
 		function = "gpio";
@@ -525,6 +584,42 @@
 
 		drive-strength = <2>;
 		bias-disable;
+	};
+
+	headphones_pdn_default: headphones-pdn-default {
+		pins = "gpio114";
+		function = "gpio";
+
+		drive-strength = <16>;
+		bias-disable;
+		output-low;
+	};
+
+	headphones_pdn_sleep: headphones-pdn-sleep {
+		pins = "gpio114";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-pull-down;
+		input-enable;
+	};
+
+	headphones_ldo_default: headphones-ldo-default {
+		pins = "gpio121";
+		function = "gpio";
+
+		drive-strength = <16>;
+		bias-disable;
+		output-low;
+	};
+
+	headphones_ldo_sleep: headphones-ldo-sleep {
+		pins = "gpio121";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-pull-down;
+		input-enable;
 	};
 
 	mag_reset_default: mag-reset-default {
