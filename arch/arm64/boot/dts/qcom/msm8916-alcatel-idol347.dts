@@ -363,14 +363,6 @@
 		"AMIC2", "MIC BIAS Internal2",
 		"AMIC3", "MIC BIAS External1";
 
-	/* unused primary link is kept so we can use same UCM with modem */
-	dai-link-primary {
-		link-name = "Primary MI2S";
-		cpu {
-			sound-dai = <&lpass MI2S_PRIMARY>;
-		};
-	};
-
 	dai-link-secondary {
 		link-name = "Secondary MI2S";
 		cpu {
