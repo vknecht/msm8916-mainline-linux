@@ -362,7 +362,7 @@
 };
 
 &sound_dai_primary {
-	/* unused primary link is kept so we can use same UCM with modem */
+	status = "disabled";
 };
 
 &sound_dai_quaternary {
