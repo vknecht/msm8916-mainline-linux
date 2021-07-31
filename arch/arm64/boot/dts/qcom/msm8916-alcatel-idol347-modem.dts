@@ -10,9 +10,22 @@
 };
 
 &sound {
-	/delete-node/ dai-link-primary;
+	/delete-node/ dai-link-secondary;
 	/delete-node/ dai-link-tertiary;
 	/delete-node/ dai-link-quaternary;
+
+	dai-link-secondary-qdsp6 {
+		link-name = "Secondary MI2S";
+		cpu {
+			sound-dai = <&q6afedai SECONDARY_MI2S_RX>;
+		};
+		platform {
+			sound-dai = <&q6routing>;
+		};
+		codec {
+			sound-dai = <&headphones>;
+		};
+	};
 
 	dai-link-tertiary-qdsp6 {
 		link-name = "Tertiary MI2S";
