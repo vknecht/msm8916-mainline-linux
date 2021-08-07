@@ -113,7 +113,7 @@
 		compatible = "linux,extcon-usb-gpio";
 		id-gpio = <&msmgpio 69 GPIO_ACTIVE_HIGH>;
 		pinctrl-names = "default";
-		pinctrl-0 = <&usb_id_default &usb_id_switch_default>;
+		pinctrl-0 = <&usb_id_default>; //(was commented in 5.12rc4) &usb_id_switch_default>;
 	};
 };
 
@@ -136,6 +136,8 @@
 		reg = <0x0e>;
 		interrupt-parent = <&msmgpio>;
 		interrupts = <114 IRQ_TYPE_EDGE_FALLING>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&accel_int_default>;
 		mount-matrix = "-1", "0", "0",
 			       "0", "-1", "0",
 			       "0", "0", "-1";
@@ -168,6 +170,7 @@
 	status = "okay";
 
 	headphones: audio-codec@10 {
+		status = "disabled";
 		compatible = "asahi-kasei,ak4375";
 		reg = <0x10>;
 		pinctrl-names = "default";
@@ -179,25 +182,30 @@
 	charger: battery@14 {
 		compatible = "qcom,smb1360";
 		reg = <0x14>;
+
 		interrupt-parent = <&msmgpio>;
 		interrupts = <62 IRQ_TYPE_LEVEL_LOW>;
-		io-channels = <&pm8916_vadc VADC_LR_MUX2_BAT_ID>;
-		io-channel-names = "batt-id";
+
 		pinctrl-names = "default";
 		pinctrl-0 = <&smb_int_default>;
 
-		qcom,fg-batt-capacity-mah = <2910>;
-		qcom,fg-cutoff-voltage-mv = <3400>;
-		qcom,fg-cc-to-cv-mv = <4328>;
-		qcom,fg-cc-soc-coeff = <0x81A1>;
-		qcom,fg-iterm-ma = <100>;
-		qcom,thermistor-c1-coeff = <0x86C8>;
-		qcom,fg-auto-recharge-soc = <99>;
+		/* Set by bootloader */
+		status = "disabled";
+		qcom,otp-rslow-config = /bits/ 8 <0x0 0x0 0x0 0x0>;
+
 		qcom,float-voltage-mv = <4350>;
+		qcom,iterm-ma = <100>;
 		qcom,charging-timeout = <192>;
 		qcom,recharge-thresh-mv = <100>;
-		qcom,iterm-ma = <100>;
 		qcom,chg-inhibit-disabled;
+		qcom,fg-batt-capacity-mah = <2910>;
+		qcom,fg-cc-soc-coeff = <0x81A1>;
+		qcom,fg-iterm-ma = <100>;
+		qcom,fg-cutoff-voltage-mv = <3400>;
+		qcom,fg-cc-to-cv-mv = <4328>;
+		qcom,thermistor-c1-coeff = <0x86C8>;
+		qcom,fg-auto-recharge-soc = <95>; /* 99 in downstream */
+
 		qcom,shdn-after-pwroff;
 		qcom,fg-reset-at-pon;
 		qcom,fg-reset-threshold-mv = <200>;
@@ -230,25 +238,27 @@
 	};
 
 	speaker_codec_top: audio-codec@34 {
+		status = "disabled";
 		compatible = "nxp,tfa9897";
 		reg = <0x34>;
-		channel = <0>; // 0: left, 1: right
-		/* reset-gpios = <&msmgpio 86 GPIO_ACTIVE_HIGH>; */
-		switch-gpios = <&msmgpio 91 GPIO_ACTIVE_HIGH>;
-		vdd-supply = <&pm8916_l6>;
-		#sound-dai-cells = <0>;
+		vddd-supply = <&pm8916_l6>;
+		rcv-gpios = <&msmgpio 91 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&speaker_top_default>;
 		sound-name-prefix = "Speaker Top";
+		#sound-dai-cells = <0>;
 	};
 
 	speaker_codec_bottom: audio-codec@36 {
+		status = "disabled";
 		compatible = "nxp,tfa9897";
 		reg = <0x36>;
-		channel = <1>;
-		/* reset-gpios = <&msmgpio 88 GPIO_ACTIVE_HIGH>; */
-		switch-gpios = <&msmgpio 92 GPIO_ACTIVE_HIGH>;
-		vdd-supply = <&pm8916_l6>;
-		#sound-dai-cells = <0>;
+		vddd-supply = <&pm8916_l6>;
+		rcv-gpios = <&msmgpio 92 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&speaker_bottom_default>;
 		sound-name-prefix = "Speaker Bottom";
+		#sound-dai-cells = <0>;
 	};
 
 	fan53555: fan53555-regulator@60 {
@@ -310,7 +320,7 @@
 
 	touchscreen@38 {
 		status = "okay";
-		compatible = "edt,edt-ft5406", "edt,edt-ft5xO6";
+		compatible = "edt,edt-ft5406", "edt,edt-ft5x06";
 		reg = <0x38>;
 		vcc-supply = <&pm8916_l6>;
 		pinctrl-names = "default";
@@ -325,6 +335,14 @@
 };
 
 &msmgpio {
+	/* TODO: check... */
+	accel_int_default: accel-int-default {
+		pins = "gpio114";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
 
 	pdn {
 		pdn_active: pdn-active {
@@ -453,6 +471,22 @@
 
 		drive-strength = <2>;
 		bias-pull-up;
+	};
+
+	speaker_bottom_default: speaker-bottom-default {
+		pins = "gpio92";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	speaker_top_default: speaker-top-default {
+		pins = "gpio91";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
 	};
 };
 
@@ -665,7 +699,7 @@
 };
 
 &sound {
-	status = "okay";
+	status = "disabled"; //"okay";
 
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&cdc_pdm_lines_act &ext_sec_tlmm_lines_act>;
@@ -676,16 +710,6 @@
 		"AMIC1", "MIC BIAS External1",
 		"AMIC2", "MIC BIAS Internal2",
 		"AMIC3", "MIC BIAS External1";
-
-	dai-link-primary {
-		link-name = "Primary MI2S";
-		cpu {
-			sound-dai = <&lpass MI2S_PRIMARY>;
-		};
-		codec {
-			sound-dai = <&lpass_codec 0>, <&wcd_codec 0>;
-		};
-	};
 
 	dai-link-secondary {
 		link-name = "Secondary MI2S";
@@ -720,12 +744,14 @@
 
 &usb {
 	status = "okay";
-	extcon = <&charger>, <&usb_id>;
-	vbus-supply = <&usb_otg_vbus>;
+	//extcon = <&charger>, <&usb_id>;
+	//vbus-supply = <&usb_otg_vbus>;
+	extcon = <&usb_id>, <&usb_id>;
 };
 
 &usb_hs_phy {
-	extcon = <&charger>;
+	//extcon = <&charger>;
+	extcon = <&usb_id>;
 	v1p8-supply = <&pm8916_l7>;
 	v3p3-supply = <&pm8916_l13>;
 };
