@@ -27,6 +27,19 @@
 	};
 
 	reserved-memory {
+
+		cont_splash_mem: framebuffer@83000000 {
+			compatible = "removed-dma-pool";
+			reg = <0x0 0x83000000 0x0 0x2000000>;
+			no-map;
+		};
+
+		gps_mem: gps@8b800000 {
+			status = "disabled";
+			reg = <0x0 0x8b800000 0x0 0x200000>;
+			no-map;
+		};
+
 		ramoops: ramoops_mem_region@9ff00000 {
 			compatible = "ramoops";
 			reg = <0 0x9ff00000 0 0x100000>;
@@ -35,12 +48,6 @@
 			console-size = <0x40000>;
 			ftrace-size = <0x1000>;
 			//pmsg-size = <0x20000>;
-		};
-
-		cont_splash_mem: framebuffer@83000000 {
-			compatible = "removed-dma-pool";
-			reg = <0x0 0x83000000 0x0 0x2000000>;
-			no-map;
 		};
 	};
 
