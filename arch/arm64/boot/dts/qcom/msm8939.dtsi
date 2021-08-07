@@ -11,6 +11,7 @@
 #include <dt-bindings/power/qcom-rpmpd.h>
 #include <dt-bindings/reset/qcom,gcc-msm8939.h>
 #include <dt-bindings/soc/qcom,apr.h>
+#include <dt-bindings/soc/qcom,memshare.h>
 #include <dt-bindings/sound/qcom,q6afe.h>
 #include <dt-bindings/sound/qcom,q6asm.h>
 #include <dt-bindings/thermal/thermal.h>
@@ -28,10 +29,10 @@
 
 	chosen { };
 
-	memory {
+	memory@80000000 {
 		device_type = "memory";
 		/* We expect the bootloader to fill in the reg */
-		reg = <0 0 0 0>;
+		reg = <0 0x80000000 0 0>;
 	};
 
 	reserved-memory {
@@ -63,6 +64,7 @@
 			compatible = "qcom,rmtfs-mem";
 			reg = <0x0 0x86681000 0x0 0x15f000>;
 			no-map;
+
 			qcom,client-id = <1>;
 		};
 
@@ -394,22 +396,6 @@
 		*/
 	};
 
-	bam_dmux: ethernet-bam-dmux {
-		compatible = "qcom,bam-dmux";
-
-		interrupt-parent = <&hexagon_smsm>;
-		interrupts = <1 IRQ_TYPE_EDGE_BOTH>, <11 IRQ_TYPE_EDGE_BOTH>;
-		interrupt-names = "pc", "pc-ack";
-
-		qcom,smem-states = <&apps_smsm 1>, <&apps_smsm 11>;
-		qcom,smem-state-names = "pc", "pc-ack";
-
-		dmas = <&bam_dmux_dma 4>, <&bam_dmux_dma 5>;
-		dma-names = "tx", "rx";
-
-		status = "disabled";
-	};
-
 	firmware {
 		scm: scm {
 			compatible = "qcom,scm-msm8916", "qcom,scm";
@@ -420,6 +406,28 @@
 			#reset-cells = <1>;
 
 			qcom,dload-mode = <&tcsr 0x6100>;
+		};
+	};
+
+	memshare: memshare {
+		compatible = "qcom,memshare";
+		qcom,legacy-client = <&memshare_gps>;
+
+		status = "disabled";
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		mpss@0 {
+			reg = <MEMSHARE_PROC_MPSS_V01>;
+			qcom,qrtr-node = <0>;
+
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			memshare_gps: gps@0 {
+				reg = <0>;
+			};
 		};
 	};
 
@@ -690,6 +698,19 @@
 			status = "okay";
 		};
 
+		/* CTI 1 - TPIU connections */
+		cti1: cti@811000 {
+			compatible = "arm,coresight-cti", "arm,primecell";
+			reg = <0x00811000 0x1000>;
+
+			clocks = <&rpmcc RPM_QDSS_CLK>;
+			clock-names = "apb_pclk";
+
+			status = "disabled";
+		};
+
+		/* CTIs 2-11 - no information - not instantiated */
+
 		tpiu: tpiu@820000 {
 			compatible = "arm,coresight-tpiu", "arm,primecell";
 			reg = <0x00820000 0x1000>;
@@ -913,6 +934,67 @@
 			status = "disabled";
 		};
 
+		/* Core CTIs; CTIs 12-15 */
+		/* CTI - CPU-0 */
+		cti12: cti@858000 {
+			compatible = "arm,coresight-cti-v8-arch", "arm,coresight-cti",
+				     "arm,primecell";
+			reg = <0x00858000 0x1000>;
+
+			clocks = <&rpmcc RPM_QDSS_CLK>;
+			clock-names = "apb_pclk";
+
+			cpu = <&CPU0>;
+			arm,cs-dev-assoc = <&etm0>;
+
+			status = "disabled";
+		};
+
+		/* CTI - CPU-1 */
+		cti13: cti@859000 {
+			compatible = "arm,coresight-cti-v8-arch", "arm,coresight-cti",
+				     "arm,primecell";
+			reg = <0x00859000 0x1000>;
+
+			clocks = <&rpmcc RPM_QDSS_CLK>;
+			clock-names = "apb_pclk";
+
+			cpu = <&CPU1>;
+			arm,cs-dev-assoc = <&etm1>;
+
+			status = "disabled";
+		};
+
+		/* CTI - CPU-2 */
+		cti14: cti@85a000 {
+			compatible = "arm,coresight-cti-v8-arch", "arm,coresight-cti",
+				     "arm,primecell";
+			reg = <0x0085a000 0x1000>;
+
+			clocks = <&rpmcc RPM_QDSS_CLK>;
+			clock-names = "apb_pclk";
+
+			cpu = <&CPU2>;
+			arm,cs-dev-assoc = <&etm2>;
+
+			status = "disabled";
+		};
+
+		/* CTI - CPU-3 */
+		cti15: cti@85b000 {
+			compatible = "arm,coresight-cti-v8-arch", "arm,coresight-cti",
+				     "arm,primecell";
+			reg = <0x0085b000 0x1000>;
+
+			clocks = <&rpmcc RPM_QDSS_CLK>;
+			clock-names = "apb_pclk";
+
+			cpu = <&CPU3>;
+			arm,cs-dev-assoc = <&etm3>;
+
+			status = "disabled";
+		};
+
 		etm0: etm@85c000 {
 			compatible = "arm,coresight-etm4x", "arm,primecell";
 			reg = <0x0085c000 0x1000>;
@@ -1037,6 +1119,7 @@
 		};
 
 		mdss: mdss@1a00000 {
+			status = "disabled";
 			compatible = "qcom,mdss";
 			reg = <0x01a00000 0x1000>,
 			      <0x01ac8000 0x3000>;
@@ -1169,7 +1252,7 @@
 		};
 
 		camss: camss@1b00000 {
-			compatible = "qcom,msm8939-camss";
+			compatible = "qcom,msm8916-camss";
 			reg = <0x01b0ac00 0x200>,
 				<0x01b00030 0x4>,
 				<0x01b0b000 0x200>,
@@ -1438,7 +1521,7 @@
 		};
 
 		mpss: remoteproc@4080000 {
-			compatible = "qcom,msm8916-mss-pil";
+			compatible = "qcom,msm8916-mss-pil", "qcom,q6v5-pil";
 			reg = <0x04080000 0x100>,
 			      <0x04020000 0x040>;
 
@@ -1479,6 +1562,22 @@
 
 			mpss {
 				memory-region = <&mpss_mem>;
+			};
+
+			bam_dmux: bam-dmux {
+				compatible = "qcom,bam-dmux";
+
+				interrupt-parent = <&hexagon_smsm>;
+				interrupts = <1 IRQ_TYPE_EDGE_BOTH>, <11 IRQ_TYPE_EDGE_BOTH>;
+				interrupt-names = "pc", "pc-ack";
+
+				qcom,smem-states = <&apps_smsm 1>, <&apps_smsm 11>;
+				qcom,smem-state-names = "pc", "pc-ack";
+
+				dmas = <&bam_dmux_dma 4>, <&bam_dmux_dma 5>;
+				dma-names = "tx", "rx";
+
+				status = "disabled";
 			};
 
 			smd-edge {
