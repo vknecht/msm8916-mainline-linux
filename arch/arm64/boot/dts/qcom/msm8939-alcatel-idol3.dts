@@ -661,6 +661,10 @@
 	status = "okay";
 };
 
+&mdss {
+	status = "okay";
+};
+
 &pm8916_pwm {
 	status = "okay";
 	pinctrl-names = "default";
