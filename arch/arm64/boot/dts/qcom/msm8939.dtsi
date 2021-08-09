@@ -60,6 +60,11 @@
 			no-map;
 		};
 
+		reserved@86680000 {
+			reg = <0x0 0x86680000 0x0 0x1000>;
+			no-map;
+		};
+
 		rmtfs@86681000 {
 			compatible = "qcom,rmtfs-mem";
 			reg = <0x0 0x86681000 0x0 0x15f000>;
