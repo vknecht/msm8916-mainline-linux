@@ -177,7 +177,6 @@
 	status = "okay";
 
 	headphones: audio-codec@10 {
-		status = "disabled";
 		compatible = "asahi-kasei,ak4375";
 		reg = <0x10>;
 		pinctrl-names = "default";
@@ -245,7 +244,6 @@
 	};
 
 	speaker_codec_top: audio-codec@34 {
-		status = "disabled";
 		compatible = "nxp,tfa9897";
 		reg = <0x34>;
 		vddd-supply = <&pm8916_l6>;
@@ -257,7 +255,6 @@
 	};
 
 	speaker_codec_bottom: audio-codec@36 {
-		status = "disabled";
 		compatible = "nxp,tfa9897";
 		reg = <0x36>;
 		vddd-supply = <&pm8916_l6>;
@@ -710,7 +707,7 @@
 };
 
 &sound {
-	status = "disabled"; //"okay";
+	status = "okay";
 
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&cdc_pdm_lines_act &ext_sec_tlmm_lines_act>;
