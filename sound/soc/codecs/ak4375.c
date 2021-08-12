@@ -250,7 +250,8 @@ static int set_bickfs(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
 	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
 
-	ak4375->nBickFreq = ucontrol->value.enumerated.item[0];
+	// TODO: ignore this, and keep hardcoded value 0 in ak4375_probe() ?
+	//ak4375->nBickFreq = ucontrol->value.enumerated.item[0];
 
 	switch (ak4375->nBickFreq) {
 	case 0:
@@ -1010,7 +1011,7 @@ static int ak4375_pre_init(struct snd_soc_component *component)
 	gpiod_set_value_cansleep(ak4375->pdn_gpiod, 1);
 	usleep_range(3000, 4000);
 
-	regmap_multi_reg_write(ak4375->regmap, ak4375_reg_bclk, ARRAY_SIZE(ak4375_reg_bclk));
+	//regmap_multi_reg_write(ak4375->regmap, ak4375_reg_bclk, ARRAY_SIZE(ak4375_reg_bclk));
 
 	return 0;
 }
