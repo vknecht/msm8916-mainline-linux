@@ -101,6 +101,7 @@ struct ak4375_priv {
 	struct regmap *regmap;
 	struct gpio_desc *pdn_gpiod;
 	struct gpio_desc *ldo_gpiod;
+	bool use_bclk_reg_seq;
 	int hp_state;
 	int digfil;		/* DASD, DASL bits */
 	int fs1;		/* sampling rate */
@@ -1011,7 +1012,9 @@ static int ak4375_pre_init(struct snd_soc_component *component)
 	gpiod_set_value_cansleep(ak4375->pdn_gpiod, 1);
 	usleep_range(3000, 4000);
 
-	//regmap_multi_reg_write(ak4375->regmap, ak4375_reg_bclk, ARRAY_SIZE(ak4375_reg_bclk));
+	if (ak4375->use_bclk_reg_seq)
+		regmap_multi_reg_write(ak4375->regmap,
+				       ak4375_reg_bclk, ARRAY_SIZE(ak4375_reg_bclk));
 
 	return 0;
 }
@@ -1102,6 +1105,13 @@ static const struct dev_pm_ops ak4375_pm = {
 				pm_runtime_force_resume)
 };
 
+static int ak4375_parse_dt(struct device *dev, struct ak4375_priv *ak4375)
+{
+	ak4375->use_bclk_reg_seq = of_property_read_bool(dev->of_node, "use-bclk-mode");
+
+	return 0;
+};
+
 static int ak4375_i2c_probe(struct i2c_client *i2c)
 {
 	struct ak4375_priv *ak4375;
@@ -1112,6 +1122,10 @@ static int ak4375_i2c_probe(struct i2c_client *i2c)
 	ak4375 = devm_kzalloc(&i2c->dev, sizeof(*ak4375), GFP_KERNEL);
 	if (!ak4375)
 		return -ENOMEM;
+
+	ret = ak4375_parse_dt(&i2c->dev, ak4375);
+	if (ret < 0)
+		return ret;
 
 	ak4375->regmap = devm_regmap_init_i2c(i2c, &ak4375_regmap);
 	if (IS_ERR(ak4375->regmap))
