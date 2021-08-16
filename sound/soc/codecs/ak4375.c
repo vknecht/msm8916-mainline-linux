@@ -388,7 +388,7 @@ static const struct snd_kcontrol_new ak4375_snd_controls[] = {
 	SOC_SINGLE("AK4375 SRC Semi-Auto Mode", AK4375_09_JITTER_CLEANER_SETTING2, 1, 1, 0),
 	SOC_SINGLE("AK4375 SRC Dither", AK4375_0A_JITTER_CLEANER_SETTING3, 4, 1, 0),
 	SOC_SINGLE("AK4375 Soft Mute Control", AK4375_09_JITTER_CLEANER_SETTING2, 0, 1, 0),
-	SOC_ENUM_EXT("HP", ak4375_bitset_enum[5], get_pdn, set_pdn),
+	SOC_ENUM_EXT("AK4375 HP", ak4375_bitset_enum[5], get_pdn, set_pdn),
 };
 
 /* DAC MUX */
