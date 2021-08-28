@@ -707,7 +707,7 @@
 &pronto {
 	status = "okay";
 	iris {
-		compatible = "qcom,wcn3680";
+		compatible = "qcom,wcn3660b";
 	};
 };
 
