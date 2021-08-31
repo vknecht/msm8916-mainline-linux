@@ -637,6 +637,7 @@
 };
 
 &dsi0 {
+	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
 	pinctrl-names = "default", "sleep";
@@ -679,6 +680,7 @@
 };
 
 &dsi0_phy {
+	status = "okay";
 	qcom,dsi-phy-regulator-ldo-mode;
 };
 
