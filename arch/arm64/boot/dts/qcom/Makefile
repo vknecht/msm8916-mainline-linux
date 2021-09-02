@@ -34,6 +34,7 @@ dtb-$(CONFIG_ARCH_QCOM)	+= msm8916-wingtech-wt86518.dtb msm8916-wingtech-wt86518
 dtb-$(CONFIG_ARCH_QCOM)	+= msm8916-wingtech-wt86528.dtb msm8916-wingtech-wt86528-modem.dtb
 dtb-$(CONFIG_ARCH_QCOM)	+= msm8916-wingtech-wt88047.dtb msm8916-wingtech-wt88047-modem.dtb
 dtb-$(CONFIG_ARCH_QCOM)	+= msm8939-alcatel-idol3.dtb msm8939-alcatel-idol3-modem.dtb
+dtb-$(CONFIG_ARCH_QCOM)	+= msm8939-bq-piccolo.dtb
 dtb-$(CONFIG_ARCH_QCOM)	+= msm8939-htc-m8qlul.dtb
 dtb-$(CONFIG_ARCH_QCOM)	+= msm8992-bullhead-rev-101.dtb
 dtb-$(CONFIG_ARCH_QCOM)	+= msm8992-msft-lumia-octagon-talkman.dtb
