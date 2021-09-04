@@ -4,7 +4,7 @@
 
 #include "msm8939.dtsi"
 #include "pm8916.dtsi"
-#include "arm/qcom-msm8939-no-psci.dtsi"
+// #include "arm/qcom-msm8939-no-psci.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/sound/apq8016-lpass.h>
 
