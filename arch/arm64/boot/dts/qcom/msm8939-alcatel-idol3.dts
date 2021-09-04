@@ -326,7 +326,8 @@
 		status = "okay";
 		compatible = "edt,edt-ft5406", "edt,edt-ft5x06";
 		reg = <0x38>;
-		vcc-supply = <&pm8916_l6>;
+		vcc-supply = <&pm8916_l17>;
+		iovcc-supply = <&pm8916_l6>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&ts_int_active &ts_reset_active>;
 		interrupt-parent = <&msmgpio>;
