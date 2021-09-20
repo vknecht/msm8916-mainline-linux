@@ -250,6 +250,15 @@ config DRM_PANEL_JDI_R63452
 	  Say Y here if you want to enable support for the JDI R63452
 	  DSI command mode panel as found in Xiaomi Mi 5 Devices.
 
+config DRM_PANEL_JDI_NT35595
+	tristate "JDI NT35595 1080p video mode panel"
+	depends on GPIOLIB && OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for JDI NT35595 1080p
+	  DSI video mode panel
+
 config DRM_PANEL_KHADAS_TS050
 	tristate "Khadas TS050 panel"
 	depends on OF
