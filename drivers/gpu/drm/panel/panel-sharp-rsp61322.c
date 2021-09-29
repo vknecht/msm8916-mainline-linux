@@ -44,11 +44,11 @@ static inline struct sharp_rsp61322 *to_sharp_rsp61322(struct drm_panel *panel)
 
 static void sharp_rsp61322_reset(struct sharp_rsp61322 *ctx)
 {
-	gpiod_set_value_cansleep(ctx->reset_gpio, 1);
-	usleep_range(5000, 6000);
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
-	usleep_range(10000, 11000);
+	usleep_range(5000, 6000);
 	gpiod_set_value_cansleep(ctx->reset_gpio, 1);
+	usleep_range(10000, 11000);
+	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
 	usleep_range(10000, 11000);
 }
 
@@ -144,7 +144,7 @@ static int sharp_rsp61322_prepare(struct drm_panel *panel)
 	ret = sharp_rsp61322_on(ctx);
 	if (ret < 0) {
 		dev_err(dev, "Failed to initialize panel: %d\n", ret);
-		gpiod_set_value_cansleep(ctx->reset_gpio, 0);
+		gpiod_set_value_cansleep(ctx->reset_gpio, 1);
 		return ret;
 	}
 
@@ -165,7 +165,7 @@ static int sharp_rsp61322_unprepare(struct drm_panel *panel)
 	if (ret < 0)
 		dev_err(dev, "Failed to un-initialize panel: %d\n", ret);
 
-	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
+	gpiod_set_value_cansleep(ctx->reset_gpio, 1);
 
 	ctx->prepared = false;
 	return 0;
@@ -220,7 +220,7 @@ static int sharp_rsp61322_probe(struct mipi_dsi_device *dsi)
 	if (!ctx)
 		return -ENOMEM;
 
-	ctx->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_LOW);
+	ctx->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->reset_gpio)) {
 		ret = PTR_ERR(ctx->reset_gpio);
 		dev_err(dev, "Failed to get reset-gpios: %d\n", ret);
@@ -245,11 +245,7 @@ static int sharp_rsp61322_probe(struct mipi_dsi_device *dsi)
 		return ret;
 	}
 
-	ret = drm_panel_add(&ctx->panel);
-	if (ret < 0) {
-		dev_err(dev, "Failed to add panel: %d\n", ret);
-		return ret;
-	}
+	drm_panel_add(&ctx->panel);
 
 	ret = mipi_dsi_attach(dsi);
 	if (ret < 0) {
