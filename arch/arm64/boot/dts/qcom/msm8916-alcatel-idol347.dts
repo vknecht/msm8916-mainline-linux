@@ -349,7 +349,10 @@
 	status = "okay";
 
 	model = "alcatel-idol3";
+	pin-switches = "Speaker Top", "Speaker Bottom";
 	audio-routing =
+		"Speaker Top", "Speaker Top OUT",
+		"Speaker Bottom", "Speaker Bottom OUT",
 		"AMIC1", "MIC BIAS External1",
 		"AMIC2", "MIC BIAS Internal2",
 		"AMIC3", "MIC BIAS External1";
