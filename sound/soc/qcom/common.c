@@ -3,6 +3,7 @@
 // Copyright (c) 2018, The Linux Foundation. All rights reserved.
 
 #include <linux/module.h>
+#include <sound/simple_card_utils.h>
 #include "common.h"
 
 int qcom_snd_parse_of(struct snd_soc_card *card)
@@ -38,6 +39,10 @@ int qcom_snd_parse_of(struct snd_soc_card *card)
 		if (ret)
 			return ret;
 	}
+
+	ret = asoc_simple_parse_pin_switches(card, NULL);
+	if (ret)
+		return ret;
 
 	ret = snd_soc_of_parse_aux_devs(card, "aux-devs");
 	if (ret)

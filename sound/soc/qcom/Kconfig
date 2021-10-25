@@ -55,6 +55,7 @@ config SND_SOC_APQ8016_SBC
 
 config SND_SOC_QCOM_COMMON
 	tristate
+	select SND_SIMPLE_CARD_UTILS
 
 config SND_SOC_QDSP6_COMMON
 	tristate
