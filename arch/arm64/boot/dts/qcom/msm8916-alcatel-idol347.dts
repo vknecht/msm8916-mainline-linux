@@ -349,6 +349,7 @@
 	status = "okay";
 
 	model = "alcatel-idol3";
+	widgets = "Speaker", "Speaker Top", "Speaker", "Speaker Bottom";
 	pin-switches = "Speaker Top", "Speaker Bottom";
 	audio-routing =
 		"Speaker Top", "Speaker Top OUT",
