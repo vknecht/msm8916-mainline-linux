@@ -106,6 +106,22 @@
 		default-brightness-level = <128>;
 	};
 
+	flash-led-controller {
+		compatible = "ocs,ocp8110";
+		flash-gpios = <&msmgpio 8 GPIO_ACTIVE_HIGH>;
+		enable-gpios = <&msmgpio 49 GPIO_ACTIVE_HIGH>;
+
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&camera_front_flash_default>;
+		pinctrl-1 = <&camera_front_flash_sleep>;
+
+		flash_led: led {
+			function = LED_FUNCTION_FLASH;
+			color = <LED_COLOR_ID_WHITE>;
+			flash-max-timeout-us = <250000>;
+		};
+	};
+
 	usb_id: usb-id {
 		compatible = "linux,extcon-usb-gpio";
 		id-gpio = <&msmgpio 110 GPIO_ACTIVE_HIGH>;
@@ -420,6 +436,24 @@
 
 		drive-strength = <2>;
 		bias-disable;
+	};
+
+	camera_front_flash {
+		camera_front_flash_default: camera-front-flash-default {
+			pins = "gpio49";
+			function = "gpio";
+
+			drive-strength = <2>;
+			bias-disable;
+		};
+
+		camera_front_flash_sleep: camera-front-flash-sleep {
+			pins = "gpio8";
+			function = "gpio";
+
+			drive-strength = <2>;
+			bias-pull-down;
+		};
 	};
 
 	gpio_hall_sensor_default: gpio-hall-sensor-default {
