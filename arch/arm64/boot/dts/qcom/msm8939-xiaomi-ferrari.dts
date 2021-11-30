@@ -20,7 +20,6 @@
 	};
 
 	chosen {
-		bootargs = "console=ttyMSM0,115200";
 		stdout-path = "serial0";
 	};
 
@@ -31,18 +30,17 @@
 
 		ramoops: ramoops_mem_region@ffe00000 {
 			compatible = "ramoops";
-			reg = <0 0xffe00000 0 0x00100000>;
+			reg = <0 0xffe00000 0 0x2000000>;
 
 			record-size = <0x0>;
 			console-size = <0x40000>;
 			ftrace-size = <0x1000>;
-			status = "okay";
 		};
 
 		cont_splash_mem: framebuffer@83000000 {
 			reg = <0x0 0x83000000 0x0 0x2000000>;
 			no-map;
-		};	
+		};
 	};
 
 	gpio-keys {
@@ -65,23 +63,26 @@
 	};
 
 	usb_id: usb-id {
-			compatible = "linux,extcon-usb-gpio";
-			id-gpio = <&msmgpio 110 GPIO_ACTIVE_HIGH>;
-			pinctrl-names = "default";
-			pinctrl-0 = <&usb_id_default>;
-			vbus-supply = <&usb_otg_vbus>;
+		compatible = "linux,extcon-usb-gpio";
+		id-gpio = <&msmgpio 110 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&usb_id_default>;
 	};
+};
+
+&blsp_dma {
+	status = "okay";
 };
 
 &blsp_i2c4 {
 	status = "okay";
 
-	battery@14 {
+	charger: battery@14 {
 		compatible = "qcom,smb1360";
 		reg = <0x14>;
 
 		interrupt-parent = <&msmgpio>;
-		interrupts = <62 IRQ_TYPE_EDGE_FALLING>;
+		interrupts = <62 IRQ_TYPE_LEVEL_LOW>;
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&smb_int_default>;
@@ -425,11 +426,11 @@
 	vddio-supply = <&pm8916_l6>;
 	
 	panel@0 {
-		compatible = "sharp,rsp61322";
+		compatible = "jdi,nt35595";
 		reg = <0>;
 
 		power-supply = <&pm8916_l17>;
-		reset-gpios = <&msmgpio 25 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&msmgpio 25 GPIO_ACTIVE_LOW>;
 
 		ports {
 			#address-cells = <1>;
@@ -455,8 +456,11 @@
 };
 
 &dsi_phy0 {
-	vddio-supply = <&pm8916_l6>;
 	qcom,dsi-phy-regulator-ldo-mode;
+};
+
+&mdss {
+	status = "okay";
 };
 
 &pronto {
@@ -503,4 +507,3 @@
 	status = "okay";
 	linux,code = <KEY_VOLUMEDOWN>;
 };
-
