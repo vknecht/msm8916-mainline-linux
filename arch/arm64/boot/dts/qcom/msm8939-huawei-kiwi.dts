@@ -259,7 +259,7 @@
 &dsi0 {
 	status = "okay";
 	panel@0 {
-		compatible = "cmi,nt35532-5p5xa";
+		compatible = "huawei,kiwi-panel";
 		reg = <0>;
 
 		reset-gpios = <&msmgpio 25 GPIO_ACTIVE_LOW>;
