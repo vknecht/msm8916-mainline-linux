@@ -1221,6 +1221,9 @@
 				phys = <&mdss_dsi0_phy>;
 				status = "disabled";
 
+				#address-cells = <1>;
+				#size-cells = <0>;
+
 				ports {
 					#address-cells = <1>;
 					#size-cells = <0>;
