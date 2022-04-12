@@ -307,6 +307,9 @@
 
 &pronto {
 	status = "okay";
+	iris {
+		compatible = "qcom,wcn3620";
+	};
 };
 
 &sdhc_1 {
