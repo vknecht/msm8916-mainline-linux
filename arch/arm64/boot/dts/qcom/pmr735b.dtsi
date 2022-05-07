@@ -14,7 +14,7 @@
 		#size-cells = <0>;
 
 		pmr735b_gpios: gpio@8800 {
-			compatible = "qcom,pmr735b-gpio";
+			compatible = "qcom,pmr735b-gpio", "qcom,spmi-gpio";
 			reg = <0x8800>;
 			gpio-controller;
 			#gpio-cells = <2>;
