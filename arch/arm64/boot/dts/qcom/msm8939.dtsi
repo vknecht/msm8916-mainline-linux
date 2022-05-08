@@ -29,10 +29,14 @@
 	#address-cells = <2>;
 	#size-cells = <2>;
 
-	memory {
+	memory@80000000 {
 		device_type = "memory";
 		/* We expect the bootloader to fill in the reg */
-		reg = <0 0 0 0>;
+		reg = <0 0x80000000 0 0>;
+	};
+
+	vreg_dummy: regulator-dummy {
+		#power-domain-cells = <0>;
 	};
 
 	reserved-memory {
@@ -157,10 +161,12 @@
 
 		CPU0: cpu@100 {
 			device_type = "cpu";
-			compatible = "arm,cortex-a53", "arm,armv8";
+			compatible = "arm,cortex-a53";
 			enable-method = "spin-table";
 			reg = <0x100>;
 			next-level-cache = <&L2_1>;
+			power-domains = <&vreg_dummy>;
+			power-domain-names = "cpr";
 			qcom,acc = <&acc0>;
 			qcom,saw = <&saw0>;
 			cpu-idle-states = <&CPU_SPC>;
@@ -174,10 +180,12 @@
 
 		CPU1: cpu@101 {
 			device_type = "cpu";
-			compatible = "arm,cortex-a53", "arm,armv8";
+			compatible = "arm,cortex-a53";
 			enable-method = "spin-table";
 			reg = <0x101>;
 			next-level-cache = <&L2_1>;
+			power-domains = <&vreg_dummy>;
+			power-domain-names = "cpr";
 			qcom,acc = <&acc1>;
 			qcom,saw = <&saw1>;
 			clocks = <&apcs1_mbox>;
@@ -186,10 +194,12 @@
 
 		CPU2: cpu@102 {
 			device_type = "cpu";
-			compatible = "arm,cortex-a53", "arm,armv8";
+			compatible = "arm,cortex-a53";
 			enable-method = "spin-table";
 			reg = <0x102>;
 			next-level-cache = <&L2_1>;
+			power-domains = <&vreg_dummy>;
+			power-domain-names = "cpr";
 			qcom,acc = <&acc2>;
 			qcom,saw = <&saw2>;
 			clocks = <&apcs1_mbox>;
@@ -198,10 +208,12 @@
 
 		CPU3: cpu@103 {
 			device_type = "cpu";
-			compatible = "arm,cortex-a53", "arm,armv8";
+			compatible = "arm,cortex-a53";
 			enable-method = "spin-table";
 			reg = <0x103>;
 			next-level-cache = <&L2_1>;
+			power-domains = <&vreg_dummy>;
+			power-domain-names = "cpr";
 			qcom,acc = <&acc3>;
 			qcom,saw = <&saw3>;
 			clocks = <&apcs1_mbox>;
@@ -210,7 +222,7 @@
 
 		CPU4: cpu@0 {
 			device_type = "cpu";
-			compatible = "arm,cortex-a53", "arm,armv8";
+			compatible = "arm,cortex-a53";
 			enable-method = "spin-table";
 			reg = <0x0>;
 			qcom,acc = <&acc4>;
@@ -218,6 +230,8 @@
 			clocks = <&apcs0>;
 			#cooling-cells = <2>;
 			next-level-cache = <&L2_0>;
+			power-domains = <&vreg_dummy>;
+			power-domain-names = "cpr";
 			L2_0: l2-cache-cluster0 {
 				compatible = "cache";
 				cache-level = <2>;
@@ -226,10 +240,12 @@
 
 		CPU5: cpu@1 {
 			device_type = "cpu";
-			compatible = "arm,cortex-a53", "arm,armv8";
+			compatible = "arm,cortex-a53";
 			enable-method = "spin-table";
 			reg = <0x1>;
 			next-level-cache = <&L2_0>;
+			power-domains = <&vreg_dummy>;
+			power-domain-names = "cpr";
 			qcom,acc = <&acc5>;
 			qcom,saw = <&saw5>;
 			clocks = <&apcs0>;
@@ -238,10 +254,12 @@
 
 		CPU6: cpu@2 {
 			device_type = "cpu";
-			compatible = "arm,cortex-a53", "arm,armv8";
+			compatible = "arm,cortex-a53";
 			enable-method = "spin-table";
 			reg = <0x2>;
 			next-level-cache = <&L2_0>;
+			power-domains = <&vreg_dummy>;
+			power-domain-names = "cpr";
 			qcom,acc = <&acc6>;
 			qcom,saw = <&saw6>;
 			clocks = <&apcs0>;
@@ -250,10 +268,12 @@
 
 		CPU7: cpu@3 {
 			device_type = "cpu";
-			compatible = "arm,cortex-a53", "arm,armv8";
+			compatible = "arm,cortex-a53";
 			enable-method = "spin-table";
 			reg = <0x3>;
 			next-level-cache = <&L2_0>;
+			power-domains = <&vreg_dummy>;
+			power-domain-names = "cpr";
 			qcom,acc = <&acc7>;
 			qcom,saw = <&saw7>;
 			clocks = <&apcs0>;
@@ -262,7 +282,7 @@
 
 		idle-states {
 			CPU_SPC: spc {
-				compatible = "arm,idle-state";
+				compatible ="qcom,idle-state-spc", "arm,idle-state";
 				arm,psci-suspend-param = <0x40000002>;
 				entry-latency-us = <130>;
 				exit-latency-us = <150>;
@@ -490,7 +510,7 @@
 
 	firmware {
 		scm: scm {
-			compatible = "qcom,scm";
+			compatible = "qcom,scm-msm8916";
 			clocks = <&gcc GCC_CRYPTO_CLK>,
 				 <&gcc GCC_CRYPTO_AXI_CLK>,
 				 <&gcc GCC_CRYPTO_AHB_CLK>;
@@ -508,7 +528,7 @@
 		compatible = "simple-bus";
 
 		qfprom_cpr: qfprom-cpr@58000 {
-			compatible = "qcom,qfprom";
+			compatible = "qcom,msm8916-qfprom", "qcom,qfprom";
 			reg = <0x00058000 0x1000>;
 			#address-cells = <1>;
 			#size-cells = <1>;
@@ -579,6 +599,7 @@
 		saw0: power-controller@b089000 {
 			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
 			reg = <0xb089000 0x1000>;
+			#power-domain-cells = <1>;
 		};
 
 		acc1: clock-controller@b098000 {
@@ -589,6 +610,7 @@
 		saw1: power-controller@b099000 {
 			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
 			reg = <0xb099000 0x1000>;
+			#power-domain-cells = <1>;
 		};
 
 		acc2: clock-controller@b0a8000 {
@@ -599,6 +621,7 @@
 		saw2: power-controller@b0a9000 {
 			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
 			reg = <0xb0a9000 0x1000>;
+			#power-domain-cells = <1>;
 		};
 
 		acc3: clock-controller@b0b8000 {
@@ -606,9 +629,10 @@
 			reg = <0xb0b8000 0x1000>;
 		};
 
-		saw3: power-domain@b0b9000 {
+		saw3: power-controller@b0b9000 {
 			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
 			reg = <0xb0b9000 0x1000>;
+			#power-domain-cells = <1>;
 		};
 
 		acc4: clock-controller@b188000 {
@@ -619,6 +643,7 @@
 		saw4: power-controller@b189000 {
 			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
 			reg = <0xb189000 0x1000>;
+			#power-domain-cells = <1>;
 		};
 
 		acc5: clock-controller@b198000 {
@@ -629,6 +654,7 @@
 		saw5: power-controller@b199000 {
 			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
 			reg = <0xb199000 0x1000>;
+			#power-domain-cells = <1>;
 		};
 
 		acc6: clock-controller@b1a8000 {
@@ -639,6 +665,7 @@
 		saw6: power-controller@b1a9000 {
 			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
 			reg = <0xb1a9000 0x1000>;
+			#power-domain-cells = <1>;
 		};
 
 		acc7: clock-controller@b1b8000 {
@@ -649,6 +676,7 @@
 		saw7: power-controller@b1b9000 {
 			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
 			reg = <0xb1b9000 0x1000>;
+			#power-domain-cells = <1>;
 		};
 
 		restart@4ab000 {
@@ -666,7 +694,6 @@
 			#interrupt-cells = <2>;
 
 			blsp1_uart1_default: blsp1-uart1-default {
-				//	TX, RX, CTS_N, RTS_N
 				pins = "gpio0", "gpio1", "gpio2", "gpio3";
 				function = "blsp_uart1";
 
@@ -1248,20 +1275,15 @@
 			clock-names = "xo", "sleep_clk";
 		};
 
-		tcsr_mutex_regs: syscon@1905000 {
-			compatible = "syscon";
-			reg = <0x1905000 0x20000>;
+		tcsr_mutex: hwlock@1905000 {
+			compatible = "qcom,tcsr-mutex";
+			reg = <0x01905000 0x20000>;
+			#hwlock-cells = <1>; 
 		};
 
 		tcsr: syscon@1937000 {
 			compatible = "qcom,tcsr-msm8916", "syscon";
-			reg = <0x1937000 0x30000>;
-		};
-
-		tcsr_mutex: hwlock {
-			compatible = "qcom,tcsr-mutex";
-			syscon = <&tcsr_mutex_regs 0 0x1000>;
-			#hwlock-cells = <1>;
+			reg = <0x01937000 0x30000>;
 		};
 
 		rpm_msg_ram: memory@60000 {
