@@ -29,129 +29,17 @@
 	#address-cells = <2>;
 	#size-cells = <2>;
 
-	memory@80000000 {
-		device_type = "memory";
-		/* We expect the bootloader to fill in the reg */
-		reg = <0 0x80000000 0 0>;
-	};
-
-	vreg_dummy: regulator-dummy {
-		#power-domain-cells = <0>;
-	};
-
-	reserved-memory {
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
-
-		tz-apps@86000000 {
-			reg = <0x0 0x86000000 0x0 0x300000>;
-			no-map;
+	clocks {
+		xo_board: xo-board {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <19200000>;
 		};
 
-		smem_mem: smem@86300000 {
-			reg = <0x0 0x86300000 0x0 0x100000>;
-			no-map;
-		};
-
-		hypervisor@86400000 {
-			reg = <0x0 0x86400000 0x0 0x100000>;
-			no-map;
-		};
-
-		tz@86500000 {
-			reg = <0x0 0x86500000 0x0 0x180000>;
-			no-map;
-		};
-
-		reserved@86680000 {
-			reg = <0x0 0x86680000 0x0 0x80000>;
-			no-map;
-		};
-
-		rmtfs@86700000 {
-			compatible = "qcom,rmtfs-mem";
-			reg = <0x0 0x86700000 0x0 0xe0000>;
-			no-map;
-
-			qcom,client-id = <1>;
-		};
-
-		rfsa@867e0000 {
-			reg = <0x0 0x867e0000 0x0 0x20000>;
-			no-map;
-		};
-
-		mpss_mem: mpss@86800000 {
-			reg = <0x0 0x86800000 0x0 0x2b00000>;
-			no-map;
-		};
-
-		wcnss_mem: wcnss@89300000 {
-			reg = <0x0 0x89300000 0x0 0x600000>;
-			no-map;
-		};
-
-		venus_mem: venus@89900000 {
-			reg = <0x0 0x89900000 0x0 0x500000>;
-			no-map;
-		};
-
-		mba_mem: mba@8ea00000 {
-			no-map;
-			reg = <0 0x8ea00000 0 0x100000>;
-		};
-	};
-
-	/*
-	 * MSM8939 has a big.LITTLE hetrogeneous computing architecture,
-	 * consisting of two clusters of four ARM Cortex-A53s each. The
-	 * LITTLE cluster runs at 1.0-1.2GHz, and the big cluster runs
-	 * at 1.5-1.7GHz.
-	 *
-	 * The enable method used here is spin-table which pre-supposes use
-	 * of a 2nd stage boot shim such as lk2nd to have installed a
-	 * spin-table, the downstream non-psci/non-spin-table method that
-	 * default msm8916/msm8936/msm8939 will not be supported upstream.
-	 */
-	cpu-map {
-		/* LITTLE (efficiency) cluster */
-		cluster0 {
-			core0 {
-				cpu = <&CPU4>;
-			};
-
-			core1 {
-				cpu = <&CPU5>;
-			};
-
-			core2 {
-				cpu = <&CPU6>;
-			};
-
-			core3 {
-				cpu = <&CPU7>;
-			};
-		};
-
-		/* big (performance) cluster */
-		/* Boot CPU is cluster 1 core 0 */
-		cluster1 {
-			core0 {
-				cpu = <&CPU0>;
-			};
-
-			core1 {
-				cpu = <&CPU1>;
-			};
-
-			core2 {
-				cpu = <&CPU2>;
-			};
-
-			core3 {
-				cpu = <&CPU3>;
-			};
+		sleep_clk: sleep-clk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <32768>;
 		};
 	};
 
@@ -292,220 +180,56 @@
 		};
 	};
 
-	pmu {
-		compatible = "arm,cortex-a53-pmu";
-		interrupts = <GIC_PPI 7 (GIC_CPU_MASK_SIMPLE(4)| IRQ_TYPE_LEVEL_HIGH)>;
-	};
-
-	thermal_zones: thermal-zones {
-		cpu0-thermal {
-			polling-delay-passive = <250>;
-			polling-delay = <1000>;
-
-			thermal-sensors = <&tsens 5>;
-
-			trips {
-				cpu0_alert: trip0 {
-					temperature = <75000>;
-					hysteresis = <2000>;
-					type = "passive";
-				};
-				cpu0_crit: trip1 {
-					temperature = <115000>;
-					hysteresis = <0>;
-					type = "critical";
-				};
+	/*
+	 * MSM8939 has a big.LITTLE hetrogeneous computing architecture,
+	 * consisting of two clusters of four ARM Cortex-A53s each. The
+	 * LITTLE cluster runs at 1.0-1.2GHz, and the big cluster runs
+	 * at 1.5-1.7GHz.
+	 *
+	 * The enable method used here is spin-table which pre-supposes use
+	 * of a 2nd stage boot shim such as lk2nd to have installed a
+	 * spin-table, the downstream non-psci/non-spin-table method that
+	 * default msm8916/msm8936/msm8939 will not be supported upstream.
+	 */
+	cpu-map {
+		/* LITTLE (efficiency) cluster */
+		cluster0 {
+			core0 {
+				cpu = <&CPU4>;
 			};
 
-			cooling-maps {
-				map0 {
-					trip = <&cpu0_alert>;
-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-				};
+			core1 {
+				cpu = <&CPU5>;
+			};
+
+			core2 {
+				cpu = <&CPU6>;
+			};
+
+			core3 {
+				cpu = <&CPU7>;
 			};
 		};
 
-		cpu1-thermal {
-			polling-delay-passive = <250>;
-			polling-delay = <1000>;
-
-			thermal-sensors = <&tsens 6>;
-
-			trips {
-				cpu1_alert: trip0 {
-					temperature = <75000>;
-					hysteresis = <2000>;
-					type = "passive";
-				};
-				cpu1_crit: trip1 {
-					temperature = <110000>;
-					hysteresis = <2000>;
-					type = "critical";
-				};
+		/* big (performance) cluster */
+		/* Boot CPU is cluster 1 core 0 */
+		cluster1 {
+			core0 {
+				cpu = <&CPU0>;
 			};
 
-			cooling-maps {
-				map0 {
-					trip = <&cpu1_alert>;
-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-				};
-			};
-		};
-
-		cpu2-thermal {
-			polling-delay-passive = <250>;
-			polling-delay = <1000>;
-
-			thermal-sensors = <&tsens 7>;
-
-			trips {
-				cpu2_alert: trip0 {
-					temperature = <75000>;
-					hysteresis = <2000>;
-					type = "passive";
-				};
-				cpu2_crit: trip1 {
-					temperature = <110000>;
-					hysteresis = <2000>;
-					type = "critical";
-				};
+			core1 {
+				cpu = <&CPU1>;
 			};
 
-			cooling-maps {
-				map0 {
-					trip = <&cpu2_alert>;
-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-				};
-			};
-		};
-
-		cpu3-thermal {
-			polling-delay-passive = <250>;
-			polling-delay = <1000>;
-
-			thermal-sensors = <&tsens 8>;
-
-			trips {
-				cpu3_alert: trip0 {
-					temperature = <75000>;
-					hysteresis = <2000>;
-					type = "passive";
-				};
-				cpu3_crit: trip1 {
-					temperature = <110000>;
-					hysteresis = <2000>;
-					type = "critical";
-				};
+			core2 {
+				cpu = <&CPU2>;
 			};
 
-			cooling-maps {
-				map0 {
-					trip = <&cpu3_alert>;
-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-				};
+			core3 {
+				cpu = <&CPU3>;
 			};
 		};
-
-		cpu4567-thermal {
-			polling-delay-passive = <250>;
-			polling-delay = <1000>;
-
-			thermal-sensors = <&tsens 9>;
-
-			trips {
-				cpu4567_alert: trip0 {
-					temperature = <75000>;
-					hysteresis = <2000>;
-					type = "passive";
-				};
-				cpu4567_crit: trip1 {
-					temperature = <110000>;
-					hysteresis = <2000>;
-					type = "critical";
-				};
-			};
-
-			cooling-maps {
-				map0 {
-					trip = <&cpu4567_alert>;
-					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-							 <&CPU7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-				};
-			};
-		};
-
-		gpu-thermal {
-			polling-delay-passive = <0>;
-			polling-delay = <0>;
-
-			thermal-sensors = <&tsens 3>;
-		};
-
-		modem1-thermal {
-			polling-delay-passive = <0>;
-			polling-delay = <0>;
-
-			thermal-sensors = <&tsens 0>;
-		};
-
-		modem2-thermal {
-			polling-delay-passive = <0>;
-			polling-delay = <0>;
-
-			thermal-sensors = <&tsens 2>;
-		};
-
-		venus-camera-thermal {
-			polling-delay-passive = <0>;
-			polling-delay = <0>;
-
-			thermal-sensors = <&tsens 1>;
-		};
-	};
-
-	timer {
-		compatible = "arm,armv8-timer";
-		interrupts = <GIC_PPI 2 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-			     <GIC_PPI 3 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-			     <GIC_PPI 4 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-			     <GIC_PPI 1 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
-	};
-
-	clocks {
-		xo_board: xo-board {
-			compatible = "fixed-clock";
-			#clock-cells = <0>;
-			clock-frequency = <19200000>;
-		};
-
-		sleep_clk: sleep-clk {
-			compatible = "fixed-clock";
-			#clock-cells = <0>;
-			clock-frequency = <32768>;
-		};
-	};
-
-	smem {
-		compatible = "qcom,smem";
-
-		memory-region = <&smem_mem>;
-		qcom,rpm-msg-ram = <&rpm_msg_ram>;
-
-		hwlocks = <&tcsr_mutex 3>;
 	};
 
 	firmware {
@@ -518,6 +242,147 @@
 			#reset-cells = <1>;
 
 			qcom,dload-mode = <&tcsr 0x6100>;
+		};
+	};
+
+	hexagon-smp2p {
+		compatible = "qcom,smp2p";
+		qcom,smem = <435>, <428>;
+
+		interrupts = <0 27 IRQ_TYPE_EDGE_RISING>;
+
+		mboxes = <&apcs1_mbox 14>;
+
+		qcom,local-pid = <0>;
+		qcom,remote-pid = <1>;
+
+		hexagon_smp2p_out: master-kernel {
+			qcom,entry-name = "master-kernel";
+
+			#qcom,smem-state-cells = <1>;
+		};
+
+		hexagon_smp2p_in: slave-kernel {
+			qcom,entry-name = "slave-kernel";
+
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		/* We expect the bootloader to fill in the reg */
+		reg = <0 0x80000000 0 0>;
+	};
+
+	pmu {
+		compatible = "arm,cortex-a53-pmu";
+		interrupts = <GIC_PPI 7 (GIC_CPU_MASK_SIMPLE(4)| IRQ_TYPE_LEVEL_HIGH)>;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		tz-apps@86000000 {
+			reg = <0x0 0x86000000 0x0 0x300000>;
+			no-map;
+		};
+
+		smem_mem: smem@86300000 {
+			reg = <0x0 0x86300000 0x0 0x100000>;
+			no-map;
+		};
+
+		hypervisor@86400000 {
+			reg = <0x0 0x86400000 0x0 0x100000>;
+			no-map;
+		};
+
+		tz@86500000 {
+			reg = <0x0 0x86500000 0x0 0x180000>;
+			no-map;
+		};
+
+		reserved@86680000 {
+			reg = <0x0 0x86680000 0x0 0x80000>;
+			no-map;
+		};
+
+		rmtfs@86700000 {
+			compatible = "qcom,rmtfs-mem";
+			reg = <0x0 0x86700000 0x0 0xe0000>;
+			no-map;
+
+			qcom,client-id = <1>;
+		};
+
+		rfsa@867e0000 {
+			reg = <0x0 0x867e0000 0x0 0x20000>;
+			no-map;
+		};
+
+		mpss_mem: mpss@86800000 {
+			reg = <0x0 0x86800000 0x0 0x2b00000>;
+			no-map;
+		};
+
+		wcnss_mem: wcnss@89300000 {
+			reg = <0x0 0x89300000 0x0 0x600000>;
+			no-map;
+		};
+
+		venus_mem: venus@89900000 {
+			reg = <0x0 0x89900000 0x0 0x500000>;
+			no-map;
+		};
+
+		mba_mem: mba@8ea00000 {
+			no-map;
+			reg = <0 0x8ea00000 0 0x100000>;
+		};
+	};
+
+	smem {
+		compatible = "qcom,smem";
+
+		memory-region = <&smem_mem>;
+		qcom,rpm-msg-ram = <&rpm_msg_ram>;
+
+		hwlocks = <&tcsr_mutex 3>;
+	};
+
+	smsm {
+		compatible = "qcom,smsm";
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		qcom,ipc-1 = <&apcs1 8 13>;
+		qcom,ipc-3 = <&apcs1 8 19>;
+
+		apps_smsm: apps@0 {
+			reg = <0>;
+
+			#qcom,smem-state-cells = <1>;
+		};
+
+		hexagon_smsm: hexagon@1 {
+			reg = <1>;
+			interrupts = <0 26 IRQ_TYPE_EDGE_RISING>;
+
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		wcnss_smsm: wcnss@6 {
+			reg = <6>;
+			interrupts = <0 144 IRQ_TYPE_EDGE_RISING>;
+
+			interrupt-controller;
+			#interrupt-cells = <2>;
 		};
 	};
 
@@ -2310,29 +2175,196 @@
 		};
 	};
 
-	hexagon-smp2p {
-		compatible = "qcom,smp2p";
-		qcom,smem = <435>, <428>;
+	thermal_zones: thermal-zones {
+		cpu0-thermal {
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
 
-		interrupts = <0 27 IRQ_TYPE_EDGE_RISING>;
+			thermal-sensors = <&tsens 5>;
 
-		mboxes = <&apcs1_mbox 14>;
+			trips {
+				cpu0_alert: trip0 {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				cpu0_crit: trip1 {
+					temperature = <115000>;
+					hysteresis = <0>;
+					type = "critical";
+				};
+			};
 
-		qcom,local-pid = <0>;
-		qcom,remote-pid = <1>;
-
-		hexagon_smp2p_out: master-kernel {
-			qcom,entry-name = "master-kernel";
-
-			#qcom,smem-state-cells = <1>;
+			cooling-maps {
+				map0 {
+					trip = <&cpu0_alert>;
+					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
 		};
 
-		hexagon_smp2p_in: slave-kernel {
-			qcom,entry-name = "slave-kernel";
+		cpu1-thermal {
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
 
-			interrupt-controller;
-			#interrupt-cells = <2>;
+			thermal-sensors = <&tsens 6>;
+
+			trips {
+				cpu1_alert: trip0 {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				cpu1_crit: trip1 {
+					temperature = <110000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&cpu1_alert>;
+					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
 		};
+
+		cpu2-thermal {
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+
+			thermal-sensors = <&tsens 7>;
+
+			trips {
+				cpu2_alert: trip0 {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				cpu2_crit: trip1 {
+					temperature = <110000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&cpu2_alert>;
+					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+
+		cpu3-thermal {
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+
+			thermal-sensors = <&tsens 8>;
+
+			trips {
+				cpu3_alert: trip0 {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				cpu3_crit: trip1 {
+					temperature = <110000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&cpu3_alert>;
+					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+
+		cpu4567-thermal {
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+
+			thermal-sensors = <&tsens 9>;
+
+			trips {
+				cpu4567_alert: trip0 {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				cpu4567_crit: trip1 {
+					temperature = <110000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&cpu4567_alert>;
+					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&CPU7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+
+		gpu-thermal {
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+
+			thermal-sensors = <&tsens 3>;
+		};
+
+		modem1-thermal {
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+
+			thermal-sensors = <&tsens 0>;
+		};
+
+		modem2-thermal {
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+
+			thermal-sensors = <&tsens 2>;
+		};
+
+		venus-camera-thermal {
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+
+			thermal-sensors = <&tsens 1>;
+		};
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI 2 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 3 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 4 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 1 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+	};
+
+	vreg_dummy: regulator-dummy {
+		#power-domain-cells = <0>;
 	};
 
 	wcnss-smp2p {
@@ -2359,38 +2391,4 @@
 			#interrupt-cells = <2>;
 		};
 	};
-
-	smsm {
-		compatible = "qcom,smsm";
-
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		qcom,ipc-1 = <&apcs1 8 13>;
-		qcom,ipc-3 = <&apcs1 8 19>;
-
-		apps_smsm: apps@0 {
-			reg = <0>;
-
-			#qcom,smem-state-cells = <1>;
-		};
-
-		hexagon_smsm: hexagon@1 {
-			reg = <1>;
-			interrupts = <0 26 IRQ_TYPE_EDGE_RISING>;
-
-			interrupt-controller;
-			#interrupt-cells = <2>;
-		};
-
-		wcnss_smsm: wcnss@6 {
-			reg = <6>;
-			interrupts = <0 144 IRQ_TYPE_EDGE_RISING>;
-
-			interrupt-controller;
-			#interrupt-cells = <2>;
-		};
-	};
 };
-
-#include "msm8916-pins.dtsi"
