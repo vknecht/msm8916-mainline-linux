@@ -386,11 +386,29 @@
 		};
 	};
 
-	soc: soc {
+	soc: soc@0 {
+
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges = <0 0 0 0xffffffff>;
 		compatible = "simple-bus";
+
+		rng@22000 {
+			compatible = "qcom,prng";
+			reg = <0x00022000 0x200>;
+			clocks = <&gcc GCC_PRNG_AHB_CLK>;
+			clock-names = "core";
+		};
+
+		qfprom: qfprom@5c000 {
+			compatible = "qcom,qfprom";
+			reg = <0x5c000 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			tsens_caldata: caldata@a0 {
+				reg = <0xa0 0x5c>;
+			};
+		};
 
 		qfprom_cpr: qfprom-cpr@58000 {
 			compatible = "qcom,msm8916-qfprom", "qcom,qfprom";
@@ -456,92 +474,9 @@
 
 		};
 
-		acc0: clock-controller@b088000 {
-			compatible = "qcom,kpss-acc-v2";
-			reg = <0xb088000 0x1000>;
-		};
-
-		saw0: power-controller@b089000 {
-			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
-			reg = <0xb089000 0x1000>;
-			#power-domain-cells = <1>;
-		};
-
-		acc1: clock-controller@b098000 {
-			compatible = "qcom,kpss-acc-v2";
-			reg = <0xb098000 0x1000>;
-		};
-
-		saw1: power-controller@b099000 {
-			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
-			reg = <0xb099000 0x1000>;
-			#power-domain-cells = <1>;
-		};
-
-		acc2: clock-controller@b0a8000 {
-			compatible = "qcom,kpss-acc-v2";
-			reg = <0xb0a8000 0x1000>;
-		};
-
-		saw2: power-controller@b0a9000 {
-			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
-			reg = <0xb0a9000 0x1000>;
-			#power-domain-cells = <1>;
-		};
-
-		acc3: clock-controller@b0b8000 {
-			compatible = "qcom,kpss-acc-v2";
-			reg = <0xb0b8000 0x1000>;
-		};
-
-		saw3: power-controller@b0b9000 {
-			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
-			reg = <0xb0b9000 0x1000>;
-			#power-domain-cells = <1>;
-		};
-
-		acc4: clock-controller@b188000 {
-			compatible = "qcom,kpss-acc-v2";
-			reg = <0xb188000 0x1000>;
-		};
-
-		saw4: power-controller@b189000 {
-			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
-			reg = <0xb189000 0x1000>;
-			#power-domain-cells = <1>;
-		};
-
-		acc5: clock-controller@b198000 {
-			compatible = "qcom,kpss-acc-v2";
-			reg = <0xb198000 0x1000>;
-		};
-
-		saw5: power-controller@b199000 {
-			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
-			reg = <0xb199000 0x1000>;
-			#power-domain-cells = <1>;
-		};
-
-		acc6: clock-controller@b1a8000 {
-			compatible = "qcom,kpss-acc-v2";
-			reg = <0xb1a8000 0x1000>;
-		};
-
-		saw6: power-controller@b1a9000 {
-			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
-			reg = <0xb1a9000 0x1000>;
-			#power-domain-cells = <1>;
-		};
-
-		acc7: clock-controller@b1b8000 {
-			compatible = "qcom,kpss-acc-v2";
-			reg = <0xb1b8000 0x1000>;
-		};
-
-		saw7: power-controller@b1b9000 {
-			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
-			reg = <0xb1b9000 0x1000>;
-			#power-domain-cells = <1>;
+		rpm_msg_ram: memory@60000 {
+			compatible = "qcom,rpm-msg-ram";
+			reg = <0x60000 0x8000>;
 		};
 
 		restart@4ab000 {
@@ -1151,11 +1086,6 @@
 			reg = <0x01937000 0x30000>;
 		};
 
-		rpm_msg_ram: memory@60000 {
-			compatible = "qcom,rpm-msg-ram";
-			reg = <0x60000 0x8000>;
-		};
-
 		blsp1_uart1: serial@78af000 {
 			compatible = "qcom,msm-uartdm-v1.4", "qcom,msm-uartdm";
 			reg = <0x78af000 0x200>;
@@ -1165,62 +1095,6 @@
 			dmas = <&blsp_dma 1>, <&blsp_dma 0>;
 			dma-names = "rx", "tx";
 			status = "disabled";
-		};
-
-		a53pll_c1: clock@b016000 {
-			compatible = "qcom,msm8939-a53pll";
-			reg = <0xb016000 0x40>;
-			#clock-cells = <0>;
-		};
-
-		a53pll_c0: clock@b116000 {
-			compatible = "qcom,msm8939-a53pll";
-			reg = <0xb116000 0x40>;
-			#clock-cells = <0>;
-		};
-
-		a53pll_cci: clock@b1d0000 {
-			compatible = "qcom,msm8939-a53pll";
-			reg = <0xb1d0000 0x40>;
-			#clock-cells = <0>;
-		};
-
-		apcs2: mailbox@b1d1000 {
-			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
-			reg = <0xb1d1000 0x1000>;
-			#mbox-cells = <1>;
-			clocks = <&a53pll_cci>, <&gcc GPLL0_VOTE>, <&xo_board>;
-			clock-names = "pll", "aux", "ref";
-			#clock-cells = <0>;
-			clock-output-names = "a53mux_cci";
-		};
-
-		apcs1_mbox: mailbox@b011000 {
-			compatible = "qcom,msm8916-apcs-kpss-global";
-			reg = <0xb011000 0x1000>;
-			#mbox-cells = <1>;
-			clocks = <&a53pll_c1>, <&gcc GPLL0_VOTE>, <&xo_board>;
-			clock-names = "pll", "aux", "ref";
-			#clock-cells = <0>;
-			clock-output-names = "a53mux_c1";
-			/* Set a nominal frequency on a53mux_cci */
-			assigned-clocks = <&apcs2>;
-			assigned-clock-rates = <297600000>;
-		};
-
-		apcs1: syscon@b111000 {
-			compatible = "syscon";
-			reg = <0xb011000 0x1000>;
-		};
-
-		apcs0: mailbox@b111000 {
-			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
-			reg = <0xb111000 0x1000>;
-			#mbox-cells = <1>;
-			clocks = <&a53pll_c0>, <&gcc GPLL0_VOTE>, <&xo_board>;
-			clock-names = "pll", "aux", "ref";
-			#clock-cells = <0>;
-			clock-output-names = "a53mux_c0";
 		};
 
 		blsp1_uart2: serial@78b0000 {
@@ -1562,6 +1436,150 @@
 			reg = <0x0b000000 0x1000>, <0x0b002000 0x1000>;
 		};
 
+		acc0: clock-controller@b088000 {
+			compatible = "qcom,kpss-acc-v2";
+			reg = <0xb088000 0x1000>;
+		};
+
+		saw0: power-controller@b089000 {
+			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
+			reg = <0xb089000 0x1000>;
+			#power-domain-cells = <1>;
+		};
+
+		acc1: clock-controller@b098000 {
+			compatible = "qcom,kpss-acc-v2";
+			reg = <0xb098000 0x1000>;
+		};
+
+		saw1: power-controller@b099000 {
+			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
+			reg = <0xb099000 0x1000>;
+			#power-domain-cells = <1>;
+		};
+
+		acc2: clock-controller@b0a8000 {
+			compatible = "qcom,kpss-acc-v2";
+			reg = <0xb0a8000 0x1000>;
+		};
+
+		saw2: power-controller@b0a9000 {
+			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
+			reg = <0xb0a9000 0x1000>;
+			#power-domain-cells = <1>;
+		};
+
+		acc3: clock-controller@b0b8000 {
+			compatible = "qcom,kpss-acc-v2";
+			reg = <0xb0b8000 0x1000>;
+		};
+
+		saw3: power-controller@b0b9000 {
+			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
+			reg = <0xb0b9000 0x1000>;
+			#power-domain-cells = <1>;
+		};
+
+		acc4: clock-controller@b188000 {
+			compatible = "qcom,kpss-acc-v2";
+			reg = <0xb188000 0x1000>;
+		};
+
+		saw4: power-controller@b189000 {
+			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
+			reg = <0xb189000 0x1000>;
+			#power-domain-cells = <1>;
+		};
+
+		acc5: clock-controller@b198000 {
+			compatible = "qcom,kpss-acc-v2";
+			reg = <0xb198000 0x1000>;
+		};
+
+		saw5: power-controller@b199000 {
+			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
+			reg = <0xb199000 0x1000>;
+			#power-domain-cells = <1>;
+		};
+
+		acc6: clock-controller@b1a8000 {
+			compatible = "qcom,kpss-acc-v2";
+			reg = <0xb1a8000 0x1000>;
+		};
+
+		saw6: power-controller@b1a9000 {
+			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
+			reg = <0xb1a9000 0x1000>;
+			#power-domain-cells = <1>;
+		};
+
+		acc7: clock-controller@b1b8000 {
+			compatible = "qcom,kpss-acc-v2";
+			reg = <0xb1b8000 0x1000>;
+		};
+
+		saw7: power-controller@b1b9000 {
+			compatible = "qcom,msm8916-saw2-v3.0-cpu", "qcom,saw2";
+			reg = <0xb1b9000 0x1000>;
+			#power-domain-cells = <1>;
+		};
+
+		a53pll_c1: clock@b016000 {
+			compatible = "qcom,msm8939-a53pll";
+			reg = <0xb016000 0x40>;
+			#clock-cells = <0>;
+		};
+
+		a53pll_c0: clock@b116000 {
+			compatible = "qcom,msm8939-a53pll";
+			reg = <0xb116000 0x40>;
+			#clock-cells = <0>;
+		};
+
+		a53pll_cci: clock@b1d0000 {
+			compatible = "qcom,msm8939-a53pll";
+			reg = <0xb1d0000 0x40>;
+			#clock-cells = <0>;
+		};
+
+		apcs2: mailbox@b1d1000 {
+			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
+			reg = <0xb1d1000 0x1000>;
+			#mbox-cells = <1>;
+			clocks = <&a53pll_cci>, <&gcc GPLL0_VOTE>, <&xo_board>;
+			clock-names = "pll", "aux", "ref";
+			#clock-cells = <0>;
+			clock-output-names = "a53mux_cci";
+		};
+
+		apcs1_mbox: mailbox@b011000 {
+			compatible = "qcom,msm8916-apcs-kpss-global";
+			reg = <0xb011000 0x1000>;
+			#mbox-cells = <1>;
+			clocks = <&a53pll_c1>, <&gcc GPLL0_VOTE>, <&xo_board>;
+			clock-names = "pll", "aux", "ref";
+			#clock-cells = <0>;
+			clock-output-names = "a53mux_c1";
+			/* Set a nominal frequency on a53mux_cci */
+			assigned-clocks = <&apcs2>;
+			assigned-clock-rates = <297600000>;
+		};
+
+		apcs1: syscon@b111000 {
+			compatible = "syscon";
+			reg = <0xb011000 0x1000>;
+		};
+
+		apcs0: mailbox@b111000 {
+			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
+			reg = <0xb111000 0x1000>;
+			#mbox-cells = <1>;
+			clocks = <&a53pll_c0>, <&gcc GPLL0_VOTE>, <&xo_board>;
+			clock-names = "pll", "aux", "ref";
+			#clock-cells = <0>;
+			clock-output-names = "a53mux_c0";
+		};
+
 		timer@b020000 {
 			#address-cells = <1>;
 			#size-cells = <1>;
@@ -1637,23 +1655,6 @@
 			#size-cells = <0>;
 			interrupt-controller;
 			#interrupt-cells = <4>;
-		};
-
-		rng@22000 {
-			compatible = "qcom,prng";
-			reg = <0x00022000 0x200>;
-			clocks = <&gcc GCC_PRNG_AHB_CLK>;
-			clock-names = "core";
-		};
-
-		qfprom: qfprom@5c000 {
-			compatible = "qcom,qfprom";
-			reg = <0x5c000 0x1000>;
-			#address-cells = <1>;
-			#size-cells = <1>;
-			tsens_caldata: caldata@a0 {
-				reg = <0xa0 0x5c>;
-			};
 		};
 
 		tsens: thermal-sensor@4a9000 {
