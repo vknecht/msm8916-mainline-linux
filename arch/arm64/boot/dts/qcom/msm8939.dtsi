@@ -496,29 +496,29 @@
 
 		pcnoc: interconnect@500000 {
 			compatible = "qcom,msm8939-pcnoc";
-			#interconnect-cells = <1>;
 			reg = <0x500000 0x11000>;
 			clock-names = "bus", "bus_a";
 			clocks = <&rpmcc RPM_SMD_PCNOC_CLK>,
 				 <&rpmcc RPM_SMD_PCNOC_A_CLK>;
+			#interconnect-cells = <1>;
 			status = "okay";
 		};
 
 		snoc: interconnect@580000 {
 			compatible = "qcom,msm8939-snoc";
-			#interconnect-cells = <1>;
 			reg = <0x580000 0x14080>;
 			clock-names = "bus", "bus_a";
 			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
 				 <&rpmcc RPM_SMD_SNOC_A_CLK>;
+			#interconnect-cells = <1>;
 			status = "okay";
 
 			snoc_mm: interconnect-snoc-mm {
 				compatible = "qcom,msm8939-snoc-mm";
-				#interconnect-cells = <1>;
 				clock-names = "bus", "bus_a";
 				clocks = <&rpmcc RPM_SMD_SYSMMNOC_CLK>,
 					 <&rpmcc RPM_SMD_SYSMMNOC_A_CLK>;
+				#interconnect-cells = <1>;
 				status = "okay";
 			};
 
@@ -1107,10 +1107,10 @@
 
 		gcc: clock-controller@1800000 {
 			compatible = "qcom,gcc-msm8939";
+			reg = <0x1800000 0x80000>;
 			#clock-cells = <1>;
 			#reset-cells = <1>;
 			#power-domain-cells = <1>;
-			reg = <0x1800000 0x80000>;
 			clocks = <&xo_board>, <&sleep_clk>;
 			clock-names = "xo", "sleep_clk";
 		};
@@ -1124,6 +1124,44 @@
 		tcsr: syscon@1937000 {
 			compatible = "qcom,tcsr-msm8916", "syscon";
 			reg = <0x01937000 0x30000>;
+		};
+		
+		lpass: lpass@7708000 {
+			compatible = "qcom,apq8016-lpass-cpu";
+			reg = <0x07708000 0x10000>;
+			reg-names = "lpass-lpaif";
+			clocks = <&gcc GCC_ULTAUDIO_AHBFABRIC_IXFABRIC_CLK>,
+				 <&gcc GCC_ULTAUDIO_PCNOC_MPORT_CLK>,
+				 <&gcc GCC_ULTAUDIO_PCNOC_SWAY_CLK>,
+				 <&gcc GCC_ULTAUDIO_LPAIF_PRI_I2S_CLK>,
+				 <&gcc GCC_ULTAUDIO_LPAIF_SEC_I2S_CLK>,
+				 <&gcc GCC_ULTAUDIO_LPAIF_SEC_I2S_CLK>,
+				 <&gcc GCC_ULTAUDIO_LPAIF_AUX_I2S_CLK>;
+
+			clock-names = "ahbix-clk",
+					"pcnoc-mport-clk",
+					"pcnoc-sway-clk",
+					"mi2s-bit-clk0",
+					"mi2s-bit-clk1",
+					"mi2s-bit-clk2",
+					"mi2s-bit-clk3";
+			#sound-dai-cells = <1>;
+
+			interrupts = <0 160 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "lpass-irq-lpaif";
+			
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+
+		lpass_codec: codec@771c000{
+			compatible = "qcom,msm8916-wcd-digital-codec";
+			reg = <0x0771c000 0x400>;
+			clocks = <&gcc GCC_ULTAUDIO_AHBFABRIC_IXFABRIC_CLK>,
+				 <&gcc GCC_CODEC_DIGCODEC_CLK>;
+			clock-names = "ahbix-clk", "mclk";
+			#sound-dai-cells = <1>;
 		};
 
 		blsp_dma: dma@7884000 {
@@ -1361,44 +1399,6 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";
-		};
-		
-		lpass: lpass@7708000 {
-			status = "disabled";
-			compatible = "qcom,apq8016-lpass-cpu";
-			clocks = <&gcc GCC_ULTAUDIO_AHBFABRIC_IXFABRIC_CLK>,
-				 <&gcc GCC_ULTAUDIO_PCNOC_MPORT_CLK>,
-				 <&gcc GCC_ULTAUDIO_PCNOC_SWAY_CLK>,
-				 <&gcc GCC_ULTAUDIO_LPAIF_PRI_I2S_CLK>,
-				 <&gcc GCC_ULTAUDIO_LPAIF_SEC_I2S_CLK>,
-				 <&gcc GCC_ULTAUDIO_LPAIF_SEC_I2S_CLK>,
-				 <&gcc GCC_ULTAUDIO_LPAIF_AUX_I2S_CLK>;
-
-			clock-names = "ahbix-clk",
-					"pcnoc-mport-clk",
-					"pcnoc-sway-clk",
-					"mi2s-bit-clk0",
-					"mi2s-bit-clk1",
-					"mi2s-bit-clk2",
-					"mi2s-bit-clk3";
-			#sound-dai-cells = <1>;
-
-			interrupts = <0 160 IRQ_TYPE_LEVEL_HIGH>;
-			interrupt-names = "lpass-irq-lpaif";
-			reg = <0x07708000 0x10000>;
-			reg-names = "lpass-lpaif";
-
-			#address-cells = <1>;
-			#size-cells = <0>;
-		};
-
-		lpass_codec: codec{
-			compatible = "qcom,msm8916-wcd-digital-codec";
-			reg = <0x0771c000 0x400>;
-			clocks = <&gcc GCC_ULTAUDIO_AHBFABRIC_IXFABRIC_CLK>,
-				 <&gcc GCC_CODEC_DIGCODEC_CLK>;
-			clock-names = "ahbix-clk", "mclk";
-			#sound-dai-cells = <1>;
 		};
 
 		sdhc_1: sdhci@7824000 {
