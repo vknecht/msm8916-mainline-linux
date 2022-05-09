@@ -115,7 +115,7 @@
 			reg = <0x0>;
 			qcom,acc = <&acc4>;
 			qcom,saw = <&saw4>;
-			clocks = <&apcs0>;
+			clocks = <&apcs0_mbox>;
 			#cooling-cells = <2>;
 			next-level-cache = <&L2_0>;
 			power-domains = <&vreg_dummy>;
@@ -136,7 +136,7 @@
 			power-domain-names = "cpr";
 			qcom,acc = <&acc5>;
 			qcom,saw = <&saw5>;
-			clocks = <&apcs0>;
+			clocks = <&apcs0_mbox>;
 			#cooling-cells = <2>;
 		};
 
@@ -150,7 +150,7 @@
 			power-domain-names = "cpr";
 			qcom,acc = <&acc6>;
 			qcom,saw = <&saw6>;
-			clocks = <&apcs0>;
+			clocks = <&apcs0_mbox>;
 			#cooling-cells = <2>;
 		};
 
@@ -164,7 +164,7 @@
 			power-domain-names = "cpr";
 			qcom,acc = <&acc7>;
 			qcom,saw = <&saw7>;
-			clocks = <&apcs0>;
+			clocks = <&apcs0_mbox>;
 			#cooling-cells = <2>;
 		};
 
@@ -360,8 +360,8 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		qcom,ipc-1 = <&apcs1 8 13>;
-		qcom,ipc-3 = <&apcs1 8 19>;
+		qcom,ipc-1 = <&apcs1_mbox 8 13>;
+		qcom,ipc-3 = <&apcs1_mbox 8 19>;
 
 		apps_smsm: apps@0 {
 			reg = <0>;
@@ -1593,7 +1593,7 @@
 		};
 
 		apcs1_mbox: mailbox@b011000 {
-			compatible = "qcom,msm8916-apcs-kpss-global";
+			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
 			reg = <0xb011000 0x1000>;
 			#mbox-cells = <1>;
 			clocks = <&a53pll_c1>, <&gcc GPLL0_VOTE>, <&xo_board>;
@@ -1605,12 +1605,7 @@
 			assigned-clock-rates = <297600000>;
 		};
 
-		apcs1: syscon@b111000 {
-			compatible = "syscon";
-			reg = <0xb011000 0x1000>;
-		};
-
-		apcs0: mailbox@b111000 {
+		apcs0_mbox: mailbox@b111000 {
 			compatible = "qcom,msm8916-apcs-kpss-global", "syscon";
 			reg = <0xb111000 0x1000>;
 			#mbox-cells = <1>;
@@ -2089,7 +2084,7 @@
 			smd-edge {
 				interrupts = <0 142 1>;
 
-				qcom,ipc = <&apcs1 8 17>;
+				qcom,ipc = <&apcs1_mbox 8 17>;
 				qcom,smd-edge = <6>;
 				qcom,remote-pid = <4>;
 
@@ -2127,7 +2122,7 @@
 
 		rpm {
 			interrupts = <GIC_SPI 168 IRQ_TYPE_EDGE_RISING>;
-			qcom,ipc = <&apcs1 8 0>;
+			qcom,ipc = <&apcs1_mbox 8 0>;
 			qcom,smd-edge = <15>;
 
 			rpm_requests: rpm_requests {
