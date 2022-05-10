@@ -49,7 +49,7 @@ properties:
     maxItems: 1
 
   phy-names:
-    const: dsi
+    maxItems: 1
 
   "#address-cells": true
 
