@@ -48,9 +48,6 @@ properties:
   phys:
     maxItems: 1
 
-  phy-names:
-    const: dsi
-
   "#address-cells": true
 
   "#size-cells": true
@@ -133,7 +130,6 @@ required:
   - clocks
   - clock-names
   - phys
-  - phy-names
   - assigned-clocks
   - assigned-clock-parents
   - power-domains

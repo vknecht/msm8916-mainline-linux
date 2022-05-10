@@ -3280,7 +3280,6 @@
 				power-domains = <&rpmhpd SM8250_MMCX>;
 
 				phys = <&dsi0_phy>;
-				phy-names = "dsi";
 
 				status = "disabled";
 
@@ -3353,7 +3352,6 @@
 				power-domains = <&rpmhpd SM8250_MMCX>;
 
 				phys = <&dsi1_phy>;
-				phy-names = "dsi";
 
 				status = "disabled";
 
