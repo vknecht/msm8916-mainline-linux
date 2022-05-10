@@ -190,7 +190,6 @@
 					"core";
 
 		phys = <&dsi1_phy>;
-		phy-names = "dsi";
 
 		ports {
 			#address-cells = <1>;
