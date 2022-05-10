@@ -3,7 +3,7 @@
  * Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
  * Copyright (C) 2017 Linaro Ltd.
  */
-
+#define DEBUG 1
 #include <linux/delay.h>
 #include <linux/device.h>
 #include <linux/dma-mapping.h>
@@ -129,8 +129,8 @@ struct venus_hfi_device {
 	u8 dbg_buf[IFACEQ_VAR_HUGE_PKT_SIZE];
 };
 
-static bool venus_pkt_debug;
-int venus_fw_debug = HFI_DEBUG_MSG_ERROR | HFI_DEBUG_MSG_FATAL;
+static bool venus_pkt_debug = true;
+int venus_fw_debug = HFI_DEBUG_MSG_LOW | HFI_DEBUG_MSG_MEDIUM | HFI_DEBUG_MSG_HIGH | HFI_DEBUG_MSG_ERROR | HFI_DEBUG_MSG_FATAL | HFI_DEBUG_MSG_PERF;
 static bool venus_sys_idle_indicator;
 static bool venus_fw_low_power_mode = true;
 static int venus_hw_rsp_timeout = 1000;
