@@ -125,6 +125,18 @@ properties:
       - port@0
       - port@1
 
+  vdd-supply:
+    description:
+      Phandle to vdd regulator device node
+
+  vddio-supply:
+    description:
+      Phandle to vdd regulator device node
+
+  vdda-supply:
+    description:
+      Phandle to vdd regulator device node
+
 required:
   - compatible
   - reg
