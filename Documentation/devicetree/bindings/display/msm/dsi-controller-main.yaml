@@ -35,15 +35,63 @@ properties:
       - description: Display escape clock
       - description: Display AHB clock
       - description: Display AXI clock
+      - description: Core MultiMedia SubSystem clock
+      - description: MDP Core clock
+      - description: MNOC clock
+    minItems: 6
+    maxItems: 9
 
   clock-names:
-    items:
-      - const: byte
-      - const: byte_intf
-      - const: pixel
-      - const: core
-      - const: iface
-      - const: bus
+    oneOf:
+      - items:
+          - const: byte
+          - const: byte_intf
+          - const: pixel
+          - const: core
+          - const: iface
+          - const: bus
+      - items:
+          - const: mdp_core
+          - const: byte
+          - const: byte_intf
+          - const: mnoc
+          - const: iface
+          - const: bus
+          - const: core_mmss
+          - const: pixel
+          - const: core
+      - items:
+          - const: mdp_core
+          - const: byte
+          - const: iface
+          - const: bus
+          - const: core_mmss
+          - const: pixel
+          - const: core
+      - items:
+          - const: mdp_core
+          - const: iface
+          - const: bus
+          - const: byte
+          - const: pixel
+          - const: core
+          - const: core_mmss
+      - items:
+          - const: mdp_core
+          - const: iface
+          - const: bus
+          - const: byte
+          - const: pixel
+          - const: core
+      - items:
+        # DSI v2
+          - const: iface
+          - const: bus
+          - const: core_mmss
+          - const: src
+          - const: byte
+          - const: pixel
+          - const: core
 
   phys:
     maxItems: 1
