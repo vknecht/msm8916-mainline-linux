@@ -28,22 +28,31 @@ properties:
     maxItems: 1
 
   clocks:
-    items:
-      - description: Display byte clock
-      - description: Display byte interface clock
-      - description: Display pixel clock
-      - description: Display escape clock
-      - description: Display AHB clock
-      - description: Display AXI clock
+    minItems: 6
+    maxItems: 9
 
   clock-names:
     items:
       - const: byte
+        description: Display byte clock
       - const: byte_intf
+        description: Display byte interface clock
       - const: pixel
+        description: Display pixel clock
       - const: core
+        description: Display escape clock
       - const: iface
+        description: Display AHB clock
       - const: bus
+        description: Display AXI clock
+      - const: core_mmss
+        description: Core MultiMedia SubSystem clock
+      - const: mdp_core
+        description: MDP Core clock
+      - const: mnoc
+        description: MNOC clock
+    minItems: 6
+    maxItems: 9
 
   phys:
     maxItems: 1
