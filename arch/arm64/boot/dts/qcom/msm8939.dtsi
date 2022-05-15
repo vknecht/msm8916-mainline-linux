@@ -1514,6 +1514,13 @@
 			};
 		};
 
+		sound: sound@7702000 {
+			status = "disabled";
+			compatible = "qcom,apq8016-sbc-sndcard";
+			reg = <0x07702000 0x4>, <0x07702004 0x4>;
+			reg-names = "mic-iomux", "spkr-iomux";
+		};
+
 		lpass: lpass@7708000 {
 			compatible = "qcom,apq8016-lpass-cpu";
 			reg = <0x07708000 0x10000>;
