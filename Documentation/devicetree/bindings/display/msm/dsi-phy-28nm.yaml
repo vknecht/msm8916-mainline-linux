@@ -19,6 +19,17 @@ properties:
       - qcom,dsi-phy-28nm-lp
       - qcom,dsi-phy-28nm-8960
 
+  clocks:
+    minItems: 2
+
+  clock-names:
+    items:
+      - const: iface
+        description: AHB clock
+      - const: ref
+        description: Block reference clock
+    minItems: 2
+
   reg:
     items:
       - description: dsi pll register set
@@ -36,6 +47,8 @@ properties:
 
 required:
   - compatible
+  - clocks
+  - clock-names
   - reg
   - reg-names
   - vddio-supply
