@@ -326,7 +326,11 @@
 	};
 };
 
-&dsi0 {
+&mdss {
+	status = "okay";
+};
+
+&mdss_dsi0 {
 	status = "okay";
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&mdss_default>;
@@ -367,13 +371,9 @@
 	};
 };
 
-&dsi0_phy {
+&mdss_dsi0_phy {
 	status = "okay";
 	qcom,dsi-phy-regulator-ldo-mode;
-};
-
-&mdss {
-	status = "okay";
 };
 
 &pm8916_pwm {
@@ -391,13 +391,6 @@
 	status = "okay";
 };
 
-&pronto {
-	status = "okay";
-	iris {
-		compatible = "qcom,wcn3660b";
-	};
-};
-
 &q6afedai {
 	dai@18 {
 		reg = <SECONDARY_MI2S_RX>;
@@ -407,6 +400,13 @@
 	dai@22 {
 		reg = <QUATERNARY_MI2S_RX>;
 		qcom,sd-lines = <0>;
+	};
+};
+
+&remoteproc_pronto {
+	status = "okay";
+	iris {
+		compatible = "qcom,wcn3660b";
 	};
 };
 
@@ -472,7 +472,7 @@
 	};
 };
 
-&otg {
+&usb {
 	status = "okay";
 	extcon = <&charger>, <&usb_id>;
 	vbus-supply = <&usb_otg_vbus>;
