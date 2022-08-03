@@ -256,7 +256,20 @@
 	status = "okay";
 };
 
-&dsi0 {
+&dsi0_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel_in>;
+};
+
+&lpass {
+	status = "okay";
+};
+
+&mdss {
+	status = "okay";
+};
+
+&mdss_dsi0 {
 	status = "okay";
 	panel@0 {
 		compatible = "huawei,kiwi-panel";
@@ -272,22 +285,9 @@
 	};
 };
 
-&dsi0_out {
-	data-lanes = <0 1 2 3>;
-	remote-endpoint = <&panel_in>;
-};
-
-&dsi0_phy {
+&mdss_dsi0_phy {
 	status = "okay";
 	qcom,dsi-phy-regulator-ldo-mode;
-};
-
-&lpass {
-	status = "okay";
-};
-
-&mdss {
-	status = "okay";
 };
 
 &pm8916_bms {
@@ -305,7 +305,7 @@
 	status = "okay";
 };
 
-&pronto {
+&remoteproc_pronto {
 	status = "okay";
 	iris {
 		compatible = "qcom,wcn3620";
@@ -381,7 +381,7 @@
 	};
 };
 
-&otg {
+&usb {
 	status = "okay";
 	extcon = <&usb_id>, <&usb_id>;
 };
