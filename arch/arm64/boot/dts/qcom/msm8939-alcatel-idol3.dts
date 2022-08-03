@@ -332,6 +332,10 @@
 	};
 };
 
+&lpass {
+	status = "okay";
+};
+
 &mdss {
 	status = "okay";
 };
