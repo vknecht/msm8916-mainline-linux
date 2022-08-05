@@ -342,6 +342,8 @@
 
 &mdss_dsi0 {
 	status = "okay";
+	vdda-supply = <&pm8916_l2>;
+	vddio-supply = <&pm8916_l6>;
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&mdss_default>;
 	pinctrl-1 = <&mdss_sleep>;
@@ -383,6 +385,7 @@
 
 &mdss_dsi0_phy {
 	status = "okay";
+	vddio-supply = <&pm8916_l6>;
 	qcom,dsi-phy-regulator-ldo-mode;
 };
 
