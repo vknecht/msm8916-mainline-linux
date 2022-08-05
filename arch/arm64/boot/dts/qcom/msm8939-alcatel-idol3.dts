@@ -84,6 +84,24 @@
 		};
 	};
 
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		led-0 {
+			gpios = <&msmgpio 32 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "torch";
+			function = LED_FUNCTION_TORCH;
+		};
+
+		/* needed in addition to si-en,sn3190 led controller */
+		led-1 {
+			gpios = <&msmgpio 108 GPIO_ACTIVE_HIGH>;
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_WHITE>;
+			default-state = "on";
+		};
+	};
+
 	gpio-lid-sensor {
 		compatible = "gpio-keys";
 
@@ -285,6 +303,21 @@
 		pinctrl-0 = <&speaker_bottom_default>;
 		sound-name-prefix = "Speaker Bottom";
 		#sound-dai-cells = <0>;
+	};
+
+	led-controller@68 {
+		compatible = "si-en,sn3190";
+		reg = <0x68>;
+		shutdown-gpios = <&msmgpio 9 GPIO_ACTIVE_HIGH>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		led@1 {
+			reg = <1>;
+			led-max-microamp = <5000>;
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_WHITE>;
+		};
 	};
 };
 
