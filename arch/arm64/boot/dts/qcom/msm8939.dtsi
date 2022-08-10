@@ -1168,10 +1168,6 @@
 				      "bus",
 				      "vsync";
 
-			interconnects = <&snoc_mm MASTER_MDP_PORT0 &bimc SLAVE_EBI_CH0>,
-					<&snoc_mm MASTER_MDP_PORT1 &bimc SLAVE_EBI_CH0>;
-			interconnect-names = "mdp0-mem", "mdp1-mem";
-
 			power-domains = <&gcc MDSS_GDSC>;
 
 			#address-cells = <1>;
@@ -1201,6 +1197,10 @@
 					      "tbu_rt";
 
 				iommus = <&apps_iommu 4>;
+
+				interconnects = <&snoc_mm MASTER_MDP_PORT0 &bimc SLAVE_EBI_CH0>,
+						<&snoc_mm MASTER_MDP_PORT1 &bimc SLAVE_EBI_CH0>;
+				interconnect-names = "mdp0-mem", "mdp1-mem";
 
 				ports {
 					#address-cells = <1>;
