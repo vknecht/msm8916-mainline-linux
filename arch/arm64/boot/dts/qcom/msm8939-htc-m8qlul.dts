@@ -40,7 +40,7 @@
 		#size-cells = <2>;
 		ranges;
 
-		/delete-node/ venus@90000000;
+		/delete-node/ venus@8c300000;
 
 		cont_splash_mem: framebuffer@83000000 {
 			compatible = "removed-dma-pool";
@@ -118,7 +118,7 @@
 	status = "okay";
 };
 
-&pronto {
+&remoteproc_pronto {
 	status = "okay";
 
 	iris {
