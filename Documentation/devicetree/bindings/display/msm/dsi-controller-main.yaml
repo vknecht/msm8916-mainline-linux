@@ -17,6 +17,16 @@ properties:
     enum:
       - qcom,dsi-ctrl-6g-qcm2290
       - qcom,mdss-dsi-ctrl
+      - qcom,mdss-dsi-ctrl-apq8064
+      - qcom,mdss-dsi-ctrl-msm8916
+      - qcom,mdss-dsi-ctrl-msm8974
+      - qcom,mdss-dsi-ctrl-msm8996
+      - qcom,mdss-dsi-ctrl-sc7180
+      - qcom,mdss-dsi-ctrl-sc7280
+      - qcom,mdss-dsi-ctrl-sdm630
+      - qcom,mdss-dsi-ctrl-sdm660
+      - qcom,mdss-dsi-ctrl-sdm845
+      - qcom,mdss-dsi-ctrl-sm8250
 
   reg:
     maxItems: 1
