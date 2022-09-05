@@ -4,7 +4,6 @@
 
 #include "msm8939.dtsi"
 #include "pm8916.dtsi"
-#include "arm/qcom-msm8939-no-psci.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/pinctrl/qcom,pmic-mpp.h>
@@ -121,7 +120,7 @@
 		atmel,irqflags = <0x2008>;
 		atmel,irq-gpio = <&msmgpio 13 0x2008>;
 		atmel,config-array-size = <0x04>;
-		atmel,gpio-mask = <&l2ccc_0>;
+		// atmel,gpio-mask = <&l2ccc_0>; /* was in no-psci */
 		atmel,default-config = <0x01>;
 		atmel,mxt-fw-name = "maxtouch.fw";
 		atmel,power-ldo-gpio = <&msmgpio 9 GPIO_ACTIVE_HIGH>;
