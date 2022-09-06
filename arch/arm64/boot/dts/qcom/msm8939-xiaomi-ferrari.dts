@@ -86,24 +86,39 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&smb_int_default>;
 
-		io-channels = <&pm8916_vadc VADC_LR_MUX2_BAT_ID>;
-		io-channel-names = "batt-id";
+		/* Set by lk2nd */
+		status = "disabled";
 
 		qcom,float-voltage-mv = <4400>;
-		qcom,recharge-thresh-mv = <100>;
 		qcom,iterm-ma = <150>;
+		qcom,charging-timeout = <192>; /* Not configured in downstream */
+		qcom,recharge-thresh-mv = <100>;
 		qcom,chg-inhibit-disabled;
-		qcom,fg-delta-soc = <1>;
+
+		/* battery-profile will be set by lk2nd */
+		// qcom,battery-profile = <0>; /* downstream uses qcom,batt-profile-select; */
+		qcom,fg-cutoff-voltage-mv = <3450>;
+		qcom,thermistor-c1-coeff = <0x85dd>;
+		qcom,fg-auto-recharge-soc = <95>; /* 99 in downstream */
+
+		qcom,rsense-10mohm;
+
+		qcom,otp-hard-jeita-config;
+		qcom,otp-hot-bat-decidegc = <600>;
+		qcom,otp-cold-bat-decidegc = <0>;
+
+		qcom,soft-jeita-config;
+		qcom,warm-bat-decidegc = <450>;
+		qcom,cool-bat-decidegc = <100>; /* 0 in downstream */
+		qcom,soft-jeita-comp-voltage-mv = <4100>;
+		qcom,soft-jeita-comp-current-ma = <750>; /* 200 in downstream */
+
 		qcom,shdn-after-pwroff;
 		qcom,fg-reset-at-pon;
-		qcom,batt-profile-select;
-		qcom,batt-id-vref-uv = <1800000>;
-		qcom,batt-id-rpullup-kohm = <100>;
-		qcom,profile-a-rid-kohm = <30>;
-		qcom,profile-b-rid-kohm = <10>;
-		qcom,profile-c-rid-kohm = <50>;
 
-		usb_otg_vbus: usb-otg-vbus {};
+		usb_otg_vbus: usb-otg-vbus {
+			regulator-max-microamp = <1500000>;
+		};
 	};
 };
 
