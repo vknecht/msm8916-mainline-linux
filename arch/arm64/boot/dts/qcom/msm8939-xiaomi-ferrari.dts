@@ -421,6 +421,7 @@
 };
 
 &mdss_dsi0 {
+	status = "okay";
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&mdss_default>;
 	pinctrl-1 = <&mdss_sleep>;
