@@ -416,7 +416,11 @@
 	};
 };
 
-&dsi0 {
+&mdss {
+	status = "okay";
+};
+
+&mdss_dsi0 {
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&mdss_default>;
 	pinctrl-1 = <&mdss_sleep>;
@@ -454,15 +458,11 @@
 	};
 };
 
-&dsi_phy0 {
+&mdss_dsi0_phy {
 	qcom,dsi-phy-regulator-ldo-mode;
 };
 
-&mdss {
-	status = "okay";
-};
-
-&pronto {
+&remoteproc_pronto {
 	status = "okay";
 	iris {
 		compatible = "qcom,wcn3680";
