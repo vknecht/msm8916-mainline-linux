@@ -124,119 +124,21 @@
 
 &blsp_i2c5 {
 	status = "okay";
-	atmel-maxtouch@4a {
-		status = "okay";
-		compatible = "atmel,mxt-ts-336t";
+	touchscreen@4a {
+		status="okay";
+		compatible = "atmel,maxtouch";
 		reg = <0x4a>;
-		
+
 		interrupt-parent = <&msmgpio>;
-		interrupts = <13 0x2008>;
-		
-		atmel,irqflags = <0x2008>;
-		atmel,irq-gpio = <&msmgpio 13 0x2008>;
-		atmel,config-array-size = <0x04>;
-		// atmel,gpio-mask = <&l2ccc_0>; /* was in no-psci */
-		atmel,default-config = <0x01>;
-		atmel,mxt-fw-name = "maxtouch.fw";
-		atmel,power-ldo-gpio = <&msmgpio 9 GPIO_ACTIVE_HIGH>;
-		atmel,power-ts-gpio = <&msmgpio 78 GPIO_ACTIVE_HIGH>;
-		atmel,reset-gpio = <&msmgpio 12 GPIO_ACTIVE_HIGH>;
-		
-		pinctrl-names = "pmx_ts_active\0pmx_ts_suspend";
+		interrupts = <13 IRQ_TYPE_LEVEL_LOW>;
+
+		reset-gpio = <&msmgpio 12 GPIO_ACTIVE_LOW>;
+
+		vdd-supply = <&pm8916_l6>;
+
+		pinctrl-names = "default", "sleep";
 		pinctrl-0 = <&ts_int_active &ts_reset_active &ts_pwr_active>;
 		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend &ts_pwr_suspend>;
-		
-		atmel,cfg_1 {
-			atmel,atchthr-sensitive = <0x06>;
-			atmel,build = <0xaa>;
-			atmel,family-id = <0xa4>;
-			atmel,key-codes = <0x66 0x8b 0x9e>;
-			atmel,key-num = <0x03>;
-			atmel,mult-intthr-not-sensitive = <0x11>;
-			atmel,mult-intthr-sensitive = <0x0c>;
-			atmel,mult-tchthr-not-sensitive = <0x00>;
-			atmel,mult-tchthr-sensitive = <0x00>;
-			atmel,mxt-cfg-name = "maxtouch_biel.fw";
-			atmel,panel-id = <0x33>;
-			atmel,rev-id = <0x02>;
-			atmel,self-chgtime-max = <0x00>;
-			atmel,self-chgtime-min = <0x00>;
-			atmel,selfintthr-stylus = <0x00>;
-			atmel,t71-tchthr-pos = <0x16>;
-			atmel,variant-id = <0x15>;
-			atmel,vendor-id = <0x0c>;
-			atmel,version = <0x20>;
-			atmel,wake-up-self-adcx = <0x00>;
-		};
-
-		atmel,cfg_2 {
-			atmel,atchthr-sensitive = <0x06>;
-			atmel,build = <0xaa>;
-			atmel,family-id = <0xa4>;
-			atmel,key-codes = <0x66 0x8b 0x9e 0x74>;
-			atmel,key-num = <0x04>;
-			atmel,mult-intthr-not-sensitive = <0x11>;
-			atmel,mult-intthr-sensitive = <0x0c>;
-			atmel,mult-tchthr-not-sensitive = <0x00>;
-			atmel,mult-tchthr-sensitive = <0x00>;
-			atmel,mxt-cfg-name = "maxtouch_biel.fw";
-			atmel,panel-id = <0x31>;
-			atmel,rev-id = <0x02>;
-			atmel,self-chgtime-max = <0x00>;
-			atmel,self-chgtime-min = <0x00>;
-			atmel,selfintthr-stylus = <0x00>;
-			atmel,t71-tchthr-pos = <0x16>;
-			atmel,variant-id = <0x15>;
-			atmel,vendor-id = <0x0c>;
-			atmel,version = <0x21>;
-			atmel,wake-up-self-adcx = <0x10>;
-		};
-
-		atmel,cfg_3 {
-			atmel,atchthr-sensitive = <0x06>;
-			atmel,build = <0xaa>;
-			atmel,family-id = <0xa4>;
-			atmel,key-codes = <0x66 0x8b 0x9e 0x74>;
-			atmel,key-num = <0x04>;
-			atmel,mult-intthr-not-sensitive = <0x11>;
-			atmel,mult-intthr-sensitive = <0x0c>;
-			atmel,mult-tchthr-not-sensitive = <0x00>;
-			atmel,mult-tchthr-sensitive = <0x00>;
-			atmel,mxt-cfg-name = "maxtouch_biel.fw";
-			atmel,panel-id = <0x35>;
-			atmel,rev-id = <0x02>;
-			atmel,self-chgtime-max = <0x00>;
-			atmel,self-chgtime-min = <0x00>;
-			atmel,selfintthr-stylus = <0x00>;
-			atmel,t71-tchthr-pos = <0x16>;
-			atmel,variant-id = <0x15>;
-			atmel,vendor-id = <0x0c>;
-			atmel,version = <0x21>;
-			atmel,wake-up-self-adcx = <0x10>;
-		};
-
-		atmel,cfg_4 {
-			atmel,atchthr-sensitive = <0x06>;
-			atmel,build = <0xaa>;
-			atmel,family-id = <0xa4>;
-			atmel,key-codes = <0x66 0x8b 0x9e 0x74>;
-			atmel,key-num = <0x04>;
-			atmel,mult-intthr-not-sensitive = <0x11>;
-			atmel,mult-intthr-sensitive = <0x0c>;
-			atmel,mult-tchthr-not-sensitive = <0x00>;
-			atmel,mult-tchthr-sensitive = <0x00>;
-			atmel,mxt-cfg-name = "maxtouch_biel.fw";
-			atmel,panel-id = <0x36>;
-			atmel,rev-id = <0x02>;
-			atmel,self-chgtime-max = <0x00>;
-			atmel,self-chgtime-min = <0x00>;
-			atmel,selfintthr-stylus = <0x00>;
-			atmel,t71-tchthr-pos = <0x16>;
-			atmel,variant-id = <0x15>;
-			atmel,vendor-id = <0x0c>;
-			atmel,version = <0x21>;
-			atmel,wake-up-self-adcx = <0x10>;
-		};				
 	};
 };
 
