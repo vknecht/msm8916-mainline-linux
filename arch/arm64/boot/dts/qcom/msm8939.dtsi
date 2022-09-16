@@ -76,6 +76,7 @@
 			power-domain-names = "cpr";
 			qcom,acc = <&acc1>;
 			qcom,saw = <&saw1>;
+			cpu-idle-states = <&CPU_SPC>;
 			clocks = <&apcs1_mbox>;
 			#cooling-cells = <2>;
 		};
@@ -90,6 +91,7 @@
 			power-domain-names = "cpr";
 			qcom,acc = <&acc2>;
 			qcom,saw = <&saw2>;
+			cpu-idle-states = <&CPU_SPC>;
 			clocks = <&apcs1_mbox>;
 			#cooling-cells = <2>;
 		};
@@ -104,6 +106,7 @@
 			power-domain-names = "cpr";
 			qcom,acc = <&acc3>;
 			qcom,saw = <&saw3>;
+			cpu-idle-states = <&CPU_SPC>;
 			clocks = <&apcs1_mbox>;
 			#cooling-cells = <2>;
 		};
@@ -115,6 +118,7 @@
 			reg = <0x0>;
 			qcom,acc = <&acc4>;
 			qcom,saw = <&saw4>;
+			cpu-idle-states = <&CPU_SPC>;
 			clocks = <&apcs0_mbox>;
 			#cooling-cells = <2>;
 			next-level-cache = <&L2_0>;
@@ -136,6 +140,7 @@
 			power-domain-names = "cpr";
 			qcom,acc = <&acc5>;
 			qcom,saw = <&saw5>;
+			cpu-idle-states = <&CPU_SPC>;
 			clocks = <&apcs0_mbox>;
 			#cooling-cells = <2>;
 		};
@@ -150,6 +155,7 @@
 			power-domain-names = "cpr";
 			qcom,acc = <&acc6>;
 			qcom,saw = <&saw6>;
+			cpu-idle-states = <&CPU_SPC>;
 			clocks = <&apcs0_mbox>;
 			#cooling-cells = <2>;
 		};
@@ -164,6 +170,7 @@
 			power-domain-names = "cpr";
 			qcom,acc = <&acc7>;
 			qcom,saw = <&saw7>;
+			cpu-idle-states = <&CPU_SPC>;
 			clocks = <&apcs0_mbox>;
 			#cooling-cells = <2>;
 		};
