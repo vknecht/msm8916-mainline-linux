@@ -518,6 +518,16 @@
         v3p3-supply = <&pm8916_l13>;
 };
 
+&wcd_codec {
+	jack-gpios = <&msmgpio 110 GPIO_ACTIVE_LOW>;
+	qcom,micbias-lvl = <2800>;
+	qcom,mbhc-vthreshold-low = <75 150 237 450 500>;
+	qcom,mbhc-vthreshold-high = <75 150 237 450 500>;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&jack_default>;
+};
+
 &rpm_requests {
 	smd_rpm_regulators: pm8916-regulators {
 		compatible = "qcom,rpm-pm8916-regulators";
@@ -663,6 +673,14 @@
 
 		drive-strength = <2>;
 		bias-pull-up;
+	};
+
+	jack_default: jack-default {
+		pins = "gpio110";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
 	};
 
 	lcd_en_default: lcd-en-default {
