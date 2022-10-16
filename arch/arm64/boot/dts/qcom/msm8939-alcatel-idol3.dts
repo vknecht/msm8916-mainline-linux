@@ -132,6 +132,18 @@
 		pinctrl-0 = <&lcd_enn_default>;
 	};
 
+	reg_led_enable: regulator-led-enable {
+		compatible = "regulator-fixed";
+		regulator-name = "led_enable";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-always-on;
+		gpio = <&msmgpio 108 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		pinctrl-names = "default";
+		pinctrl-0 = <&led_enable_default>;
+	};
+
 	usb_id: usb-id {
 		compatible = "linux,extcon-usb-gpio";
 		id-gpio = <&msmgpio 69 GPIO_ACTIVE_HIGH>;
@@ -295,6 +307,21 @@
 		pinctrl-0 = <&speaker_bottom_default>;
 		sound-name-prefix = "Speaker Bottom";
 		#sound-dai-cells = <0>;
+	};
+
+	led-controller@68 {
+		compatible = "si-en,sn3190";
+		reg = <0x68>;
+		shutdown-gpios = <&msmgpio 9 GPIO_ACTIVE_HIGH>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		led@1 {
+			reg = <1>;
+			led-max-microamp = <5000>;
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_WHITE>;
+		};
 	};
 };
 
@@ -668,6 +695,15 @@
 
 	lcd_enn_default: lcd-enn-default {
 		pins = "gpio106";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-pull-up;
+		output-high;
+	};
+
+	led_enable_default: led-enable-default {
+		pins = "gpio108";
 		function = "gpio";
 
 		drive-strength = <2>;
