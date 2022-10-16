@@ -84,6 +84,16 @@
 		};
 	};
 
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		led-0 {
+			gpios = <&msmgpio 32 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "torch";
+			function = LED_FUNCTION_TORCH;
+		};
+	};
+
 	gpio-lid-sensor {
 		compatible = "gpio-keys";
 
