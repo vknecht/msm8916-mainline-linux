@@ -50,8 +50,9 @@ static bool dsi_mgr_power_on_early(struct drm_bridge *bridge)
 	 * after it. When that framework is in place then we'll use it and
 	 * remove this special case.
 	 */
-	return !(next_bridge && next_bridge->of_node &&
-		 of_device_is_compatible(next_bridge->of_node, "parade,ps8640"));
+	//return !(next_bridge && next_bridge->of_node &&
+	//	 of_device_is_compatible(next_bridge->of_node, "parade,ps8640"));
+	return false;
 }
 #else
 static inline bool dsi_mgr_power_on_early(struct drm_bridge *bridge)
