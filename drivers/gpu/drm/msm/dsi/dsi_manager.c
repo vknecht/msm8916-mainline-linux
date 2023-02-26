@@ -37,21 +37,10 @@ static struct msm_dsi_manager msm_dsim_glb;
 #ifdef CONFIG_OF
 static bool dsi_mgr_power_on_early(struct drm_bridge *bridge)
 {
-	struct drm_bridge *next_bridge = drm_bridge_get_next_bridge(bridge);
-
 	/*
-	 * If the next bridge in the chain is the Parade ps8640 bridge chip
-	 * then don't power on early since it seems to violate the expectations
-	 * of the firmware that the bridge chip is running.
-	 *
-	 * NOTE: this is expected to be a temporary special case. It's expected
-	 * that we'll eventually have a framework that allows the next level
-	 * bridge to indicate whether it needs us to power on before it or
-	 * after it. When that framework is in place then we'll use it and
-	 * remove this special case.
+	 * HACK: don't power on early.
 	 */
-	return !(next_bridge && next_bridge->of_node &&
-		 of_device_is_compatible(next_bridge->of_node, "parade,ps8640"));
+	return false;
 }
 #else
 static inline bool dsi_mgr_power_on_early(struct drm_bridge *bridge)
