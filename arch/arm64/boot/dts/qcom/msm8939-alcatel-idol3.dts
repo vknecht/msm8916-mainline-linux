@@ -167,11 +167,8 @@
 	gyroscope@68 {
 		compatible = "bosch,bmg160";
 		reg = <0x68>;
-		interrupts-extended = <&tlmm 23 IRQ_TYPE_EDGE_RISING>;
 		vdd-supply = <&pm8916_l17>;
 		vddio-supply = <&pm8916_l6>;
-		pinctrl-0 = <&gyro_int_default>;
-		pinctrl-names = "default";
 	};
 };
 
@@ -601,14 +598,6 @@
 
 	gpio_leds_default: gpio-leds-default-state {
 		pins = "gpio32";
-		function = "gpio";
-
-		drive-strength = <2>;
-		bias-disable;
-	};
-
-	gyro_int_default: gyro-int-default-state {
-		pins = "gpio23";
 		function = "gpio";
 
 		drive-strength = <2>;
