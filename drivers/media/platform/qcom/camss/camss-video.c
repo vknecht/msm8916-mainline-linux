@@ -1008,6 +1008,7 @@ int msm_video_register(struct camss_video *video, struct v4l2_device *v4l2_dev,
 
 	switch (video->camss->res->version) {
 	case CAMSS_8x16:
+	case CAMSS_8x39:
 		if (is_pix) {
 			video->formats = formats_pix_8x16;
 			video->nformats = ARRAY_SIZE(formats_pix_8x16);
