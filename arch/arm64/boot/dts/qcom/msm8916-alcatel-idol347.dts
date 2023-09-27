@@ -301,6 +301,10 @@
 	status = "okay";
 };
 
+&camss {
+	status = "okay";
+};
+
 &gpu {
 	status = "okay";
 };
