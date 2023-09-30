@@ -19,8 +19,8 @@
 #include <media/v4l2-fwnode.h>
 #include <media/v4l2-subdev.h>
 
-#define IMX214_DEFAULT_CLK_FREQ	24000000
-#define IMX214_DEFAULT_LINK_FREQ 480000000
+#define IMX214_DEFAULT_CLK_FREQ	23880000
+#define IMX214_DEFAULT_LINK_FREQ 243200000
 #define IMX214_DEFAULT_PIXEL_RATE ((IMX214_DEFAULT_LINK_FREQ * 8LL) / 10)
 #define IMX214_FPS 30
 #define IMX214_MBUS_CODE MEDIA_BUS_FMT_SRGGB10_1X10
@@ -125,13 +125,13 @@ static const struct reg_8 mode_4096x2304[] = {
 	{0x0303, 0x02},
 	{0x0305, 0x03},
 	{0x0306, 0x00},
-	{0x0307, 0x96},
+	{0x0307, 0x4C},
 	{0x0309, 0x0A},
 	{0x030B, 0x01},
 	{0x0310, 0x00},
 
-	{0x0820, 0x12},
-	{0x0821, 0xC0},
+	{0x0820, 0x09},
+	{0x0821, 0x09},
 	{0x0822, 0x00},
 	{0x0823, 0x00},
 
@@ -173,6 +173,10 @@ static const struct reg_8 mode_4096x2304[] = {
 	{0x4177, 0x3C},
 	{0xAE20, 0x04},
 	{0xAE21, 0x5C},
+
+	/* color bars test pattern */
+	/*{0x0600, 0x00},
+	{0x0601, 0x02},*/
 
 	{IMX214_TABLE_WAIT_MS, 10},
 	{0x0138, 0x01},
