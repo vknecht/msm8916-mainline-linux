@@ -47,6 +47,26 @@
 		default-brightness-level = <64>;
 	};
 
+	cam_vana_rear_vreg: cam-vana-rear-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "cam_vana_rear_vreg";
+		startup-delay-us = <0>;
+		enable-active-high;
+		gpio = <&tlmm 108 GPIO_ACTIVE_HIGH>;
+		pinctrl-0 = <&imx214_vana_default>;
+		pinctrl-names = "default";
+	};
+
+	cam_vdig_rear_vreg: cam-vdig-rear-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "cam_vdig_rear_vreg";
+		startup-delay-us = <0>;
+		enable-active-high;
+		gpio = <&tlmm 109 GPIO_ACTIVE_HIGH>;
+		pinctrl-0 = <&imx214_vdig_default>;
+		pinctrl-names = "default";
+	};
+
 	gpio-keys {
 		compatible = "gpio-keys";
 
@@ -303,6 +323,45 @@
 
 &camss {
 	status = "okay";
+
+	ports {
+		port@0 {
+			reg = <0>;
+			csiphy0_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 2 3 4>;
+				remote-endpoint = <&imx214_ep>;
+			};
+		};
+	};
+};
+
+&cci {
+	status = "okay";
+};
+
+&cci_i2c0 {
+	camera@1a {
+		compatible = "sony,imx214";
+		reg = <0x1a>;
+
+		vdda-supply = <&cam_vana_rear_vreg>;
+		vddd-supply = <&cam_vdig_rear_vreg>;
+		vdddo-supply = <&pm8916_l6>;
+		enable-gpios = <&tlmm 35 GPIO_ACTIVE_HIGH>;
+		clocks = <&gcc GCC_CAMSS_MCLK0_CLK>;
+		clock-frequency = <23880000>;
+		pinctrl-0 = <&camera_rear_default>;
+		pinctrl-names = "default";
+
+		port {
+			imx214_ep: endpoint {
+				data-lanes = <1 2 3 4>;
+				link-frequencies = /bits/ 64 <243200000>;
+				remote-endpoint = <&csiphy0_ep>;
+			};
+		};
+	};
 };
 
 &gpu {
@@ -529,6 +588,22 @@
 
 	headphones_pdn_default: headphones-pdn-default-state {
 		pins = "gpio114";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	imx214_vana_default: imx214-vana-default-state {
+		pins = "gpio108";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	imx214_vdig_default: imx214-vdig-default-state {
+		pins = "gpio109";
 		function = "gpio";
 
 		drive-strength = <2>;
