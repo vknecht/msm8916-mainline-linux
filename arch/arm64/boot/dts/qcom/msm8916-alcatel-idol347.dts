@@ -341,6 +341,14 @@
 };
 
 &cci_i2c0 {
+	actuator: lens@c {
+		compatible="asahi-kasei,ak7345";
+		reg = <0x0c>;
+
+		vdd-supply = <&pm8916_l10>;
+		vio-supply = <&pm8916_l6>;
+	};
+
 	camera@1a {
 		compatible = "sony,imx214";
 		reg = <0x1a>;
@@ -353,6 +361,8 @@
 		clock-frequency = <23880000>;
 		pinctrl-0 = <&camera_rear_default>;
 		pinctrl-names = "default";
+
+		lens-focus = <&actuator>;
 
 		port {
 			imx214_ep: endpoint {
@@ -415,6 +425,13 @@
 	qcom,mbhc-vthreshold-low = <75 100 120 180 500>;
 	qcom,mbhc-vthreshold-high = <75 100 120 180 500>;
 	qcom,hphl-jack-type-normally-open;
+};
+
+&pm8916_rpm_regulators {
+        pm8916_l10: l10 {
+                regulator-min-microvolt = <2800000>;
+                regulator-max-microvolt = <2800000>;
+        };
 };
 
 &pm8916_pwm {
