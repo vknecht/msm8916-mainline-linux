@@ -1559,9 +1559,8 @@
 			clock-names = "ispif_ahb", "camss_top_ahb", "cci_ahb",
 					  "cci", "camss_ahb";
 			assigned-clocks = <&gcc GCC_CAMSS_ISPIF_AHB_CLK>,
-					  //<&gcc GCC_CAMSS_CCI_AHB_CLK>,
 					  <&gcc GCC_CAMSS_CCI_CLK>;
-			assigned-clock-rates = <80000000>, <37500000>; //<19200000>;
+			assigned-clock-rates = <80000000>, <19200000>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&cci0_default>;
 			status = "disabled";
