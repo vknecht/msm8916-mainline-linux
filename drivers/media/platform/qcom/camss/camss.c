@@ -149,7 +149,7 @@ static const struct camss_subdev_resources csiphy_res_8x39[] = {
 		.regulators = {},
 		.clock = { "top_ahb", "ispif_ahb", "ahb", "csiphy1_timer" },
 		.clock_rate = { { 0 },
-				{ 80000000 },
+				{ 40000000, 80000000 },
 				{ 0 },
 				{ 100000000, 200000000 } },
 		.reg = { "csiphy1", "csiphy1_clk_mux" },
