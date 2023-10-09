@@ -88,6 +88,26 @@
 		};
 	};
 
+	reg_cam_vana: regulator-cam-vana {
+		compatible = "regulator-fixed";
+		regulator-name = "cam_vana";
+		startup-delay-us = <0>;
+		enable-active-high;
+		gpio = <&tlmm 17 GPIO_ACTIVE_HIGH>;
+		pinctrl-0 = <&cam_vana_default>;
+		pinctrl-names = "default";
+	};
+
+	reg_cam_vdig: regulator-cam-vdig {
+		compatible = "regulator-fixed";
+		regulator-name = "cam_vdig";
+		startup-delay-us = <0>;
+		enable-active-high;
+		gpio = <&tlmm 109 GPIO_ACTIVE_HIGH>;
+		pinctrl-0 = <&cam_vdig_default>;
+		pinctrl-names = "default";
+	};
+
 	reg_lcd_enn: regulator-lcd-enn {
 		compatible = "regulator-fixed";
 		regulator-name = "lcd_enn";
@@ -310,8 +330,62 @@
 	};
 };
 
+/*
+ * The OEM wired the usual gpio34 to proximity sensor
+ * and used gpio94 for the rear camera pwdn pin...
+ */
+&camera_rear_default {
+	pwdn-pins {
+		pins = "gpio94";
+	};
+};
+
 &camss {
 	status = "okay";
+
+	ports {
+		port@1 {
+			reg = <1>;
+			csiphy1_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 2>;
+				remote-endpoint = <&ov8858_ep>;
+			};
+		};
+	};
+};
+
+&cci {
+	status = "okay";
+};
+
+&cci_i2c0 {
+	camera@10 {
+		compatible = "ovti,ov8858";
+		reg = <0x10>;
+
+		clocks = <&gcc GCC_CAMSS_MCLK1_CLK>;
+		clock-names = "xvclk";
+
+		avdd-supply = <&reg_cam_vana>;
+		dvdd-supply = <&reg_cam_vdig>;
+		dovdd-supply = <&pm8916_l6>;
+
+		reset-gpios = <&tlmm 28 GPIO_ACTIVE_LOW>;
+		powerdown-gpios = <&tlmm 33 GPIO_ACTIVE_LOW>;
+		pinctrl-0 = <&camera_front_default>;
+		pinctrl-names = "default";
+
+		orientation = <0>; /* front camera */
+
+		port {
+			ov8858_ep: endpoint {
+				data-lanes = <1 2>;
+				link-frequencies = /bits/ 64 <360000000>;
+				remote-endpoint = <&csiphy1_ep>;
+			};
+		};
+	};
 };
 
 &gpu {
@@ -501,6 +575,22 @@
 	accel_int_default: accel-int-default-state {
 		pins = "gpio114";
 		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	cam_vana_default: cam-vana-default-state {
+		pins = "gpio17";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	cam_vdig_default: cam-vdig-default-state {
+		pins = "gpio109";
+		function = "gpio";
+
 		drive-strength = <2>;
 		bias-disable;
 	};
