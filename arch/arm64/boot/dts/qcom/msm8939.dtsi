@@ -25,6 +25,11 @@
 	#address-cells = <2>;
 	#size-cells = <2>;
 
+	aliases {
+		remoteproc0 = &wcnss;
+		remoteproc1 = &mpss;
+	};
+
 	clocks {
 		xo_board: xo-board {
 			compatible = "fixed-clock";
