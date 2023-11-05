@@ -20,6 +20,11 @@
 	#address-cells = <2>;
 	#size-cells = <2>;
 
+	aliases {
+		remoteproc0 = &wcnss;
+		remoteproc1 = &mpss;
+	};
+
 	chosen { };
 
 	memory@80000000 {
