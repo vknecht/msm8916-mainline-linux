@@ -742,6 +742,10 @@ static void vfe_set_qos(struct vfe_device *vfe)
 	writel_relaxed(val, vfe->base + VFE_0_BUS_BDG_QOS_CFG_5);
 	writel_relaxed(val, vfe->base + VFE_0_BUS_BDG_QOS_CFG_6);
 	writel_relaxed(val7, vfe->base + VFE_0_BUS_BDG_QOS_CFG_7);
+
+	//vk: 8939 quirk
+	writel_relaxed(0x00000fff, vfe->vbif_base + 0x30);
+	writel_relaxed(0x00555000, vfe->vbif_base + 0x34);
 }
 
 static void vfe_set_ds(struct vfe_device *vfe)

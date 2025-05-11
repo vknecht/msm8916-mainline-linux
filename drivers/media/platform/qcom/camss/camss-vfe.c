@@ -1807,6 +1807,11 @@ int msm_vfe_subdev_init(struct camss *camss, struct vfe_device *vfe,
 		return PTR_ERR(vfe->base);
 	}
 
+	vfe->vbif_base = devm_platform_ioremap_resource_byname(pdev, res->reg[1]);
+	if (IS_ERR(vfe->vbif_base)) {
+		dev_dbg(dev, "could not map vbif memory\n");
+	}
+
 	/* Interrupt */
 
 	ret = platform_get_irq_byname(pdev, res->interrupt[0]);
